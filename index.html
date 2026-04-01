@@ -40,20 +40,25 @@
       background: rgba(255,255,255,0.15); border-radius: 50%; bottom: -20px; left: 10px;
     }
     .header-top {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 6px; position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px; position: relative; z-index: 1;
     }
     .app-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 0.05em; }
+    .month-nav {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      position: relative; z-index: 1;
+    }
     .nav-btn {
-      width: 32px; height: 32px; border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       background: rgba(255,255,255,0.35); border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; color: white; font-weight: 700;
     }
     .nav-btn:active { background: rgba(255,255,255,0.55); }
     .month-label {
-      font-size: 24px; font-weight: 700; color: white; text-align: center;
-      position: relative; z-index: 1; text-shadow: 0 2px 8px rgba(180,120,120,0.2);
+      font-size: 24px; font-weight: 700; color: white;
+      text-shadow: 0 2px 8px rgba(180,120,120,0.2);
+      min-width: 160px; text-align: center;
     }
 
     /* Stats */
@@ -209,7 +214,7 @@
     .rate-page { padding: 16px; }
     .rate-section {
       background: var(--card); border-radius: var(--radius); padding: 16px;
-      margin-bottom: 12px; border: 1.5px solid #F5EDE8;
+      margin-bottom: 12px; border: 1.5px solid #F5EDE8; overflow: hidden;
     }
     .rate-section h3 { font-size: 13px; color: var(--text-hint); margin-bottom: 12px; font-weight: 700; letter-spacing: 0.04em; }
     .income-row {
@@ -217,7 +222,7 @@
     }
     .income-row label { font-size: 13px; font-weight: 700; min-width: 40px; color: var(--text-sub); }
     .income-row input {
-      flex: 1; padding: 10px; border: 1.5px solid #F0E0D8; border-radius: 12px;
+      flex: 1; min-width: 0; padding: 10px; border: 1.5px solid #F0E0D8; border-radius: 12px;
       font-size: 15px; outline: none; text-align: right; font-family: inherit;
     }
     .income-row input:focus { border-color: #FFB8A0; }
@@ -264,12 +269,12 @@
   <div class="header">
     <div class="header-top">
       <span class="app-title">稼働時間管理</span>
-      <div style="display:flex;gap:8px;position:relative;z-index:1;" id="monthNav">
-        <button class="nav-btn" onclick="prevMonth()">◀</button>
-        <button class="nav-btn" onclick="nextMonth()">▶</button>
-      </div>
     </div>
-    <div class="month-label" id="monthLabel"></div>
+    <div class="month-nav" id="monthNav">
+      <button class="nav-btn" onclick="prevMonth()">◀</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button class="nav-btn" onclick="nextMonth()">▶</button>
+    </div>
   </div>
 
   <div class="page active" id="page-monthly">
