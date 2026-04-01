@@ -3,339 +3,295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#1a73e8">
+  <meta name="theme-color" content="#FFCFB8">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>稼働時間管理</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'M PLUS Rounded 1c', sans-serif; }
     :root {
-      --primary: #1a73e8;
-      --primary-dark: #1557b0;
-      --bg: #f5f5f5;
-      --card: #ffffff;
-      --text: #202124;
-      --text-secondary: #5f6368;
-      --border: #dadce0;
-      --danger: #d93025;
+      --peach: #FFE4D6; --peach-dark: #E8936A; --peach-text: #A0522D;
+      --mint: #D4F5E9; --mint-dark: #5BBFA0; --mint-text: #2E7D6B;
+      --lavender: #EAE4FF; --lavender-dark: #9B87D4; --lavender-text: #5B4A9C;
+      --lemon: #FFFACC; --lemon-dark: #E8C843; --lemon-text: #8A7000;
+      --sky: #D6EEFF; --sky-dark: #68B0E8; --sky-text: #1C5E9A;
+      --bg: #FFF9F6; --card: #FFFFFF;
+      --text-main: #3D2B1F; --text-sub: #A08070; --text-hint: #C8B4AA;
+      --radius: 20px; --danger: #E08080;
     }
-    body {
-      font-family: 'Segoe UI', 'Roboto', 'Noto Sans JP', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding-bottom: 70px;
-    }
+    body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 80px; }
+
+    /* Header */
     .header {
-      background: var(--primary);
-      color: white;
-      padding: 12px 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      background: linear-gradient(135deg, #FFCFB8 0%, #FFB8D4 50%, #C8B8FF 100%);
+      padding: 20px 20px 16px;
+      position: sticky; top: 0; z-index: 100;
+      overflow: hidden;
     }
-    .header h1 { font-size: 18px; font-weight: 500; }
-    .header .month-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
+    .header::before {
+      content: ''; position: absolute; width: 120px; height: 120px;
+      background: rgba(255,255,255,0.2); border-radius: 50%; top: -30px; right: -20px;
     }
-    .header .month-nav button {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .header::after {
+      content: ''; position: absolute; width: 80px; height: 80px;
+      background: rgba(255,255,255,0.15); border-radius: 50%; bottom: -20px; left: 10px;
     }
-    .header .month-nav button:active { background: rgba(255,255,255,0.4); }
-    .header .month-label { font-size: 20px; font-weight: 500; }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--card);
-      border-top: 1px solid var(--border);
-      display: flex;
-      z-index: 100;
+    .header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px; position: relative; z-index: 1;
     }
-    .bottom-nav button {
-      flex: 1;
-      padding: 8px 0;
-      border: none;
-      background: none;
-      color: var(--text-secondary);
-      font-size: 11px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
+    .app-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 0.05em; }
+    .nav-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.35); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: white; font-weight: 700;
     }
-    .bottom-nav button.active { color: var(--primary); }
-    .bottom-nav button .icon { font-size: 22px; }
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 12px;
+    .nav-btn:active { background: rgba(255,255,255,0.55); }
+    .month-label {
+      font-size: 24px; font-weight: 700; color: white; text-align: center;
+      position: relative; z-index: 1; text-shadow: 0 2px 8px rgba(180,120,120,0.2);
     }
-    .summary-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 16px 0; }
+    .stat-card {
+      background: var(--card); border-radius: var(--radius); padding: 14px 16px;
+      border: 1.5px solid transparent; position: relative; overflow: hidden;
     }
-    .summary-card .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
-    .summary-card .value { font-size: 22px; font-weight: 600; }
-    .entry-list { padding: 0 12px 12px; }
-    .entry-item {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: 3px 3px 0 0;
     }
-    .entry-item:active { background: #f0f0f0; }
-    .entry-item .date-info { flex: 1; }
-    .entry-item .date-info .date { font-size: 15px; font-weight: 500; }
-    .entry-item .date-info .day { font-size: 12px; color: var(--text-secondary); }
-    .entry-item .date-info .day.sun { color: var(--danger); }
-    .entry-item .date-info .day.sat { color: var(--primary); }
-    .entry-item .time-info { text-align: right; }
-    .entry-item .time-info .times { font-size: 13px; color: var(--text-secondary); }
-    .entry-item .time-info .duration { font-size: 16px; font-weight: 600; color: var(--primary); }
-    .entry-item .no-work { font-size: 13px; color: #bbb; }
-    .entry-detail {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      cursor: pointer;
+    .stat-card.peach { border-color: #FFD0BC; }
+    .stat-card.peach::before { background: linear-gradient(90deg, #FFB899, #FFC8A8); }
+    .stat-card.mint { border-color: #B8EDD8; }
+    .stat-card.mint::before { background: linear-gradient(90deg, #7DD8B8, #A8EAD0); }
+    .stat-card.lavender { border-color: #D8CCFF; }
+    .stat-card.lavender::before { background: linear-gradient(90deg, #B8A8EE, #CFC4FF); }
+    .stat-card.lemon { border-color: #FFEBB8; }
+    .stat-card.lemon::before { background: linear-gradient(90deg, #FFD878, #FFE898); }
+    .stat-icon { font-size: 16px; margin-bottom: 4px; }
+    .stat-label { font-size: 10px; font-weight: 500; color: var(--text-sub); letter-spacing: 0.04em; margin-bottom: 2px; }
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); line-height: 1.1; }
+    .stat-unit { font-size: 12px; font-weight: 500; color: var(--text-sub); }
+
+    .section-label {
+      font-size: 11px; font-weight: 700; color: var(--text-hint);
+      letter-spacing: 0.08em; padding: 16px 20px 8px;
     }
-    .entry-detail:active { background: #f0f0f0; }
-    .entry-detail .date-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
+
+    /* Day list */
+    .day-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; }
+    .day-card {
+      background: var(--card); border-radius: 16px; padding: 12px 14px;
+      display: flex; align-items: center; border: 1.5px solid #F5EDE8;
+      cursor: pointer; transition: transform 0.15s;
     }
-    .entry-detail .date-header .date { font-size: 15px; font-weight: 500; }
-    .entry-detail .date-header .total { font-size: 16px; font-weight: 600; color: var(--primary); }
-    .entry-detail .time-slot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
+    .day-card:active { transform: translateX(3px); border-color: #FFD0C0; }
+    .day-card.today { border-color: #FFB8A8; background: #FFF5F2; }
+    .day-card.has-work { border-color: #C8E8D8; }
+    .day-dot {
+      width: 36px; height: 36px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-right: 12px; font-size: 13px; font-weight: 700;
     }
-    .entry-detail .time-slot:last-of-type { border-bottom: none; }
-    .entry-detail .memo { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-style: italic; }
+    .day-dot.mon { background: var(--mint); color: var(--mint-text); }
+    .day-dot.tue { background: #FFE8F0; color: #C05080; }
+    .day-dot.wed { background: var(--sky); color: var(--sky-text); }
+    .day-dot.thu { background: var(--lavender); color: var(--lavender-text); }
+    .day-dot.fri { background: var(--peach); color: var(--peach-text); }
+    .day-dot.sat { background: var(--lemon); color: var(--lemon-text); }
+    .day-dot.sun { background: #FFE0E0; color: #C05050; }
+    .day-info { flex: 1; }
+    .day-title { font-size: 13px; font-weight: 700; color: var(--text-main); }
+    .day-sub { font-size: 11px; color: var(--text-hint); }
+    .day-hours { font-size: 13px; font-weight: 700; color: var(--text-sub); text-align: right; }
+    .day-hours.worked { color: var(--peach-dark); }
+    .today-badge {
+      font-size: 9px; background: linear-gradient(135deg, #FFB8A0, #FFD0A8);
+      color: white; padding: 2px 7px; border-radius: 20px; font-weight: 700; margin-left: 4px;
+    }
+
+    /* Multi-slot */
+    .day-card-multi { background: var(--card); border-radius: 16px; padding: 12px 14px; border: 1.5px solid #C8E8D8; cursor: pointer; }
+    .day-card-multi:active { transform: translateX(3px); }
+    .day-card-multi .multi-header { display: flex; align-items: center; margin-bottom: 6px; }
+    .day-card-multi .slot-row { display: flex; justify-content: space-between; padding: 3px 0 3px 48px; font-size: 12px; color: var(--text-sub); }
+
+    /* FAB */
     .fab {
-      position: fixed;
-      bottom: 80px;
-      right: 16px;
-      width: 56px;
-      height: 56px;
-      border-radius: 28px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-size: 28px;
-      box-shadow: 0 4px 12px rgba(26,115,232,0.4);
-      cursor: pointer;
-      z-index: 90;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: fixed; bottom: 88px; right: 20px;
+      width: 52px; height: 52px; border-radius: 18px;
+      background: linear-gradient(135deg, #FFAB90, #FF8FC0);
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(255,140,140,0.35);
+      font-size: 24px; color: white; z-index: 90;
     }
-    .fab:active { background: var(--primary-dark); transform: scale(0.95); }
+    .fab:active { transform: scale(0.95); }
+
+    /* Bottom nav */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 72px;
+      background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+      border-top: 1px solid #F0E8E4; display: flex;
+      align-items: center; justify-content: space-around; padding: 0 8px 8px; z-index: 100;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 16px; border-radius: 14px; cursor: pointer; border: none; background: none;
+    }
+    .nav-item:active { background: #FFF0EB; }
+    .nav-item.active { background: #FFE8E0; }
+    .nav-icon { font-size: 18px; }
+    .nav-label { font-size: 10px; font-weight: 700; color: var(--text-hint); }
+    .nav-item.active .nav-label { color: var(--peach-dark); }
+
+    /* Modal */
     .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 200;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(60,40,30,0.4); z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
     }
     .modal-overlay.hidden { display: none; }
     .modal {
-      background: var(--card);
-      border-radius: 20px 20px 0 0;
-      padding: 24px 20px;
-      width: 100%;
-      max-width: 480px;
-      max-height: 80vh;
-      overflow-y: auto;
+      background: var(--bg); border-radius: 28px 28px 0 0; padding: 24px 20px 32px;
+      width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
     }
-    .modal h2 { font-size: 18px; margin-bottom: 20px; }
+    .modal h2 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 20px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-hint); letter-spacing: 0.04em; margin-bottom: 6px; }
     .form-group input, .form-group textarea, .form-group select {
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-      background: white;
+      padding: 12px; border: 1.5px solid #F0E0D8; border-radius: 14px;
+      font-size: 16px; outline: none; background: white; font-family: inherit;
     }
     .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+      border-color: #FFB8A0; box-shadow: 0 0 0 3px rgba(255,184,160,0.2);
     }
     .form-group input, .form-group textarea { width: 100%; }
-    .form-group textarea { resize: vertical; min-height: 60px; }
-
-    /* Time picker row */
-    .time-picker-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    .form-group textarea { resize: vertical; min-height: 50px; }
+    .time-picker-row { display: flex; align-items: center; gap: 6px; }
     .time-picker-row select {
-      flex: 1;
-      padding: 12px 4px;
-      font-size: 18px;
-      text-align: center;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: white;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
+      flex: 1; padding: 12px 4px; font-size: 18px; text-align: center;
+      border: 1.5px solid #F0E0D8; border-radius: 14px; background: white;
+      outline: none; appearance: none; -webkit-appearance: none; font-family: inherit;
     }
-    .time-picker-row select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
-    }
-    .time-picker-row .colon { font-size: 20px; font-weight: bold; }
+    .time-picker-row select:focus { border-color: #FFB8A0; box-shadow: 0 0 0 3px rgba(255,184,160,0.2); }
+    .time-picker-row .colon { font-size: 20px; font-weight: bold; color: var(--text-hint); }
     .btn-now {
-      padding: 10px 14px;
-      background: #e8f0fe;
-      color: var(--primary);
-      border: 1px solid var(--primary);
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
+      padding: 10px 12px; background: linear-gradient(135deg, #FFD0B8, #FFC0D0);
+      color: white; border: none; border-radius: 12px; font-size: 13px;
+      font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit;
     }
-    .btn-now:active { background: #d2e3fc; }
-
-    .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .btn-now:active { opacity: 0.8; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
     .modal-actions button {
-      flex: 1;
-      padding: 14px;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
+      flex: 1; padding: 14px; border: none; border-radius: 14px;
+      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
     }
-    .btn-cancel { background: #e8eaed; color: var(--text); }
-    .btn-save { background: var(--primary); color: white; }
-    .btn-save:active { background: var(--primary-dark); }
+    .btn-cancel { background: #F0E8E4; color: var(--text-sub); }
+    .btn-save { background: linear-gradient(135deg, #FFAB90, #FF8FC0); color: white; }
+    .btn-save:active { opacity: 0.85; }
+    .btn-delete-full {
+      width: 100%; padding: 12px; border: 1.5px solid var(--danger); border-radius: 14px;
+      font-size: 13px; cursor: pointer; background: white; color: var(--danger);
+      font-weight: 700; margin-top: 12px; font-family: inherit;
+    }
+
+    /* Pages */
     .page { display: none; }
     .page.active { display: block; }
-    .rate-page { padding: 12px; }
+
+    /* Rate page */
+    .rate-page { padding: 16px; }
     .rate-section {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: var(--card); border-radius: var(--radius); padding: 16px;
+      margin-bottom: 12px; border: 1.5px solid #F5EDE8;
     }
-    .rate-section h3 {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
+    .rate-section h3 { font-size: 13px; color: var(--text-hint); margin-bottom: 12px; font-weight: 700; letter-spacing: 0.04em; }
+    .income-row {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
     }
-    .rate-input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-    .rate-input-row label { font-size: 14px; min-width: 60px; }
-    .rate-input-row input {
-      flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
-      font-size: 16px; outline: none; text-align: right;
+    .income-row label { font-size: 13px; font-weight: 700; min-width: 40px; color: var(--text-sub); }
+    .income-row input {
+      flex: 1; padding: 10px; border: 1.5px solid #F0E0D8; border-radius: 12px;
+      font-size: 15px; outline: none; text-align: right; font-family: inherit;
     }
-    .rate-input-row .unit { font-size: 14px; color: var(--text-secondary); }
+    .income-row input:focus { border-color: #FFB8A0; }
+    .income-row .unit { font-size: 13px; color: var(--text-hint); }
     .rate-result {
-      text-align: center;
-      padding: 20px;
-      background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
-      border-radius: 12px;
+      text-align: center; padding: 20px;
+      background: linear-gradient(135deg, #FFE8D8, #FFD8E8, #E8D8FF);
+      border-radius: var(--radius);
     }
-    .rate-result .rate-label { font-size: 14px; color: var(--text-secondary); }
-    .rate-result .rate-value { font-size: 36px; font-weight: 700; color: var(--primary); margin-top: 4px; }
-    .year-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .year-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid var(--border); font-size: 11px; color: var(--text-secondary); }
-    .year-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
-    .year-table tr:last-child td { border-bottom: none; font-weight: 600; }
+    .rate-result .rate-label { font-size: 13px; color: var(--text-sub); }
+    .rate-result .rate-value { font-size: 34px; font-weight: 700; color: var(--peach-dark); margin-top: 4px; }
+    .year-selector {
+      display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px;
+    }
+    .year-selector button {
+      background: rgba(255,255,255,0.8); border: 1.5px solid #F0E0D8;
+      width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer;
+    }
+    .year-selector .year-label { font-size: 16px; font-weight: 700; color: var(--text-main); }
+    .year-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .year-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #F0E8E4; font-size: 10px; color: var(--text-hint); font-weight: 700; }
+    .year-table td { padding: 7px 4px; border-bottom: 1px solid #F8F0EC; }
+    .year-table tr:last-child td { border-bottom: none; font-weight: 700; }
     .year-table .num { text-align: right; }
-    .year-selector { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px; }
-    .year-selector button { background: white; border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; }
-    .year-selector .year-label { font-size: 16px; font-weight: 500; }
-    .settings-page { padding: 12px; }
+
+    /* Settings */
+    .settings-page { padding: 16px; }
     .settings-section {
-      background: var(--card); border-radius: 12px; padding: 16px;
-      margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: var(--card); border-radius: var(--radius); padding: 16px;
+      margin-bottom: 12px; border: 1.5px solid #F5EDE8;
     }
-    .settings-section h3 { font-size: 14px; margin-bottom: 12px; }
+    .settings-section h3 { font-size: 13px; margin-bottom: 12px; font-weight: 700; color: var(--text-main); }
     .settings-btn {
-      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px;
-      background: var(--card); font-size: 14px; cursor: pointer; margin-bottom: 8px; text-align: left;
+      width: 100%; padding: 12px; border: 1.5px solid #F0E0D8; border-radius: 14px;
+      background: white; font-size: 13px; cursor: pointer; margin-bottom: 8px;
+      text-align: left; font-family: inherit; font-weight: 500; color: var(--text-main);
     }
-    .settings-btn:active { background: #f0f0f0; }
-    .settings-btn.danger { color: var(--danger); border-color: var(--danger); }
+    .settings-btn:active { background: #FFF5F0; }
+    .settings-btn.danger { color: var(--danger); border-color: #FFD0D0; }
   </style>
 </head>
 <body>
-  <div class="header" id="header">
-    <h1>稼働時間管理</h1>
-    <div class="month-nav" id="monthNav">
-      <button onclick="prevMonth()">&#9664;</button>
-      <span class="month-label" id="monthLabel"></span>
-      <button onclick="nextMonth()">&#9654;</button>
+
+  <div class="header">
+    <div class="header-top">
+      <span class="app-title">稼働時間管理</span>
+      <div style="display:flex;gap:8px;position:relative;z-index:1;" id="monthNav">
+        <button class="nav-btn" onclick="prevMonth()">◀</button>
+        <button class="nav-btn" onclick="nextMonth()">▶</button>
+      </div>
     </div>
+    <div class="month-label" id="monthLabel"></div>
   </div>
 
   <div class="page active" id="page-monthly">
-    <div class="summary-grid" id="monthlySummary"></div>
-    <div class="entry-list" id="entryList"></div>
+    <div class="stats-grid" id="monthlySummary"></div>
+    <div class="section-label" id="sectionLabel"></div>
+    <div class="day-list" id="entryList"></div>
   </div>
 
   <div class="page" id="page-rate">
     <div class="rate-page">
       <div class="rate-section">
-        <h3>収入設定</h3>
-        <div class="rate-input-row">
-          <label>年収</label>
-          <input type="number" id="annualIncome" placeholder="9000000" inputmode="numeric" onchange="saveIncome(); renderRatePage();">
-          <span class="unit">円</span>
+        <h3>月収入力</h3>
+        <div id="monthlyIncomeInputs"></div>
+        <div style="margin-top:12px; text-align:right; font-size:13px; color:var(--text-sub);">
+          年収合計: <strong id="annualIncomeTotal" style="color:var(--peach-dark);">¥0</strong>
         </div>
       </div>
       <div class="rate-section">
         <div class="year-selector">
-          <button onclick="changeRateYear(-1)">&#9664;</button>
+          <button onclick="changeRateYear(-1)">◀</button>
           <span class="year-label" id="rateYearLabel"></span>
-          <button onclick="changeRateYear(1)">&#9654;</button>
+          <button onclick="changeRateYear(1)">▶</button>
         </div>
         <div id="yearSummaryTable"></div>
       </div>
@@ -349,432 +305,318 @@
     <div class="settings-page">
       <div class="settings-section">
         <h3>データ管理</h3>
-        <button class="settings-btn" onclick="exportData()">データをエクスポート (JSON)</button>
-        <button class="settings-btn" onclick="document.getElementById('importFile').click()">データをインポート</button>
+        <button class="settings-btn" onclick="exportData()">📤 データをエクスポート (JSON)</button>
+        <button class="settings-btn" onclick="document.getElementById('importFile').click()">📥 データをインポート</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
       </div>
       <div class="settings-section">
-        <h3>注意</h3>
-        <button class="settings-btn danger" onclick="clearAllData()">全データを削除</button>
+        <button class="settings-btn danger" onclick="clearAllData()">🗑 全データを削除</button>
       </div>
-      <div class="settings-section" style="text-align:center; color: var(--text-secondary); font-size: 12px;">
-        <p>稼働時間管理 v1.0</p>
-        <p style="margin-top:4px;">データはこの端末のブラウザ内(localStorage)に保存されます。</p>
-        <p style="margin-top:4px;">サーバーへの送信は一切ありません。</p>
+      <div class="settings-section" style="text-align:center; color: var(--text-hint); font-size: 11px;">
+        <p>稼働時間管理 v2.0</p>
+        <p style="margin-top:4px;">データはこの端末のブラウザ内に保存されます</p>
+        <p>サーバーへの送信は一切ありません</p>
       </div>
     </div>
   </div>
 
-  <button class="fab" id="fab" onclick="openAddModal()">+</button>
+  <button class="fab" id="fab" onclick="openAddModal()">＋</button>
 
   <div class="bottom-nav">
-    <button class="active" onclick="switchPage('monthly', this)">
-      <span class="icon">📅</span>月別
+    <button class="nav-item active" onclick="switchPage('monthly', this)">
+      <span class="nav-icon">🗓</span><span class="nav-label">月別</span>
     </button>
-    <button onclick="switchPage('rate', this)">
-      <span class="icon">💰</span>時間単価
+    <button class="nav-item" onclick="switchPage('rate', this)">
+      <span class="nav-icon">💰</span><span class="nav-label">時間単価</span>
     </button>
-    <button onclick="switchPage('settings', this)">
-      <span class="icon">⚙</span>設定
+    <button class="nav-item" onclick="switchPage('settings', this)">
+      <span class="nav-icon">⚙</span><span class="nav-label">設定</span>
     </button>
   </div>
 
   <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal(event)">
-    <div class="modal" id="modalContent" onclick="event.stopPropagation()">
-    </div>
+    <div class="modal" id="modalContent" onclick="event.stopPropagation()"></div>
   </div>
 
   <script>
     const STORAGE_KEY = 'workHoursData';
-    const INCOME_KEY = 'annualIncome';
+    const INCOME_KEY = 'monthlyIncomes';
 
-    function loadData() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-      catch { return {}; }
-    }
-    function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+    function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; } }
+    function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+    function loadIncomes() { try { return JSON.parse(localStorage.getItem(INCOME_KEY)) || {}; } catch { return {}; } }
+    function saveIncomes(d) { localStorage.setItem(INCOME_KEY, JSON.stringify(d)); }
 
-    function getMonthEntries(year, month) {
-      const data = loadData();
-      return data[`${year}-${String(month).padStart(2,'0')}`] || [];
-    }
-    function setMonthEntries(year, month, entries) {
-      const data = loadData();
-      data[`${year}-${String(month).padStart(2,'0')}`] = entries;
-      saveData(data);
-    }
+    function getMonthEntries(y,m) { return loadData()[`${y}-${String(m).padStart(2,'0')}`] || []; }
+    function setMonthEntries(y,m,e) { const d=loadData(); d[`${y}-${String(m).padStart(2,'0')}`]=e; saveData(d); }
 
-    function parseTime(t) {
-      if (!t) return null;
-      const [h,m] = t.split(':').map(Number);
-      return h * 60 + m;
-    }
-    function calcDuration(start, end) {
-      const s = parseTime(start), e = parseTime(end);
-      if (s === null || e === null) return 0;
-      let diff = e - s;
-      if (diff < 0) diff += 1440;
-      return diff;
-    }
-    function formatMinutes(min) {
-      return `${Math.floor(min/60)}時間${min%60}分`;
-    }
-    function formatHHMM(min) {
-      return `${Math.floor(min/60)}:${String(min%60).padStart(2,'0')}`;
-    }
-    function getDaysInMonth(y,m) { return new Date(y,m,0).getDate(); }
-    function getDayOfWeek(y,m,d) { return ['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()]; }
-    function getDowIdx(y,m,d) { return new Date(y,m-1,d).getDay(); }
-    function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+    function parseTime(t) { if(!t) return null; const [h,m]=t.split(':').map(Number); return h*60+m; }
+    function calcDuration(s,e) { const a=parseTime(s),b=parseTime(e); if(a===null||b===null) return 0; let d=b-a; if(d<0) d+=1440; return d; }
+    function fmtMin(m) { return `${Math.floor(m/60)}時間${m%60}分`; }
+    function fmtHM(m) { return `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`; }
+    function daysIn(y,m) { return new Date(y,m,0).getDate(); }
+    function dowName(y,m,d) { return ['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()]; }
+    function dowIdx(y,m,d) { return new Date(y,m-1,d).getDay(); }
+    function dowClass(y,m,d) { return ['sun','mon','tue','wed','thu','fri','sat'][new Date(y,m-1,d).getDay()]; }
+    function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+    function isToday(y,m,d) { const t=new Date(); return t.getFullYear()===y && t.getMonth()+1===m && t.getDate()===d; }
 
-    // Generate hour/minute options
-    function hourOptions(selected) {
-      let html = '<option value="">--</option>';
-      for (let h=0; h<24; h++) {
-        const v = String(h).padStart(2,'0');
-        html += `<option value="${v}" ${v===selected?'selected':''}>${h}</option>`;
-      }
-      return html;
-    }
-    function minuteOptions(selected) {
-      let html = '<option value="">--</option>';
-      for (let m=0; m<60; m+=10) {
-        const v = String(m).padStart(2,'0');
-        html += `<option value="${v}" ${v===selected?'selected':''}>${v}</option>`;
-      }
-      return html;
-    }
-    function getTimeFromSelects(prefix) {
-      const h = document.getElementById(prefix+'H').value;
-      const m = document.getElementById(prefix+'M').value;
-      if (!h || !m) return '';
-      return `${h}:${m}`;
-    }
-    function setNow(prefix) {
-      const now = new Date();
-      const h = String(now.getHours()).padStart(2,'0');
-      const m = String(Math.round(now.getMinutes()/10)*10 % 60).padStart(2,'0');
-      document.getElementById(prefix+'H').value = h;
-      document.getElementById(prefix+'M').value = m;
-    }
-    function timePickerHtml(prefix, label, startH, startM) {
-      return `
-        <div class="form-group">
-          <label>${label}</label>
-          <div class="time-picker-row">
-            <select id="${prefix}H">${hourOptions(startH||'')}</select>
-            <span class="colon">:</span>
-            <select id="${prefix}M">${minuteOptions(startM||'')}</select>
-            <button type="button" class="btn-now" onclick="setNow('${prefix}')">今</button>
-          </div>
-        </div>
-      `;
+    function hourOpts(sel) { let h='<option value="">--</option>'; for(let i=0;i<24;i++){const v=String(i).padStart(2,'0'); h+=`<option value="${v}" ${v===sel?'selected':''}>${i}</option>`;} return h; }
+    function minOpts(sel) { let h='<option value="">--</option>'; for(let i=0;i<60;i+=10){const v=String(i).padStart(2,'0'); h+=`<option value="${v}" ${v===sel?'selected':''}>${v}</option>`;} return h; }
+    function getTime(p) { const h=document.getElementById(p+'H').value, m=document.getElementById(p+'M').value; return (h&&m)?`${h}:${m}`:''; }
+    function setNow(p) { const n=new Date(); document.getElementById(p+'H').value=String(n.getHours()).padStart(2,'0'); document.getElementById(p+'M').value=String(Math.round(n.getMinutes()/10)*10%60).padStart(2,'0'); }
+    function timePicker(p,label,sh,sm) {
+      return `<div class="form-group"><label>${label}</label>
+        <div class="time-picker-row">
+          <select id="${p}H">${hourOpts(sh||'')}</select><span class="colon">:</span>
+          <select id="${p}M">${minOpts(sm||'')}</select>
+          <button type="button" class="btn-now" onclick="setNow('${p}')">今</button>
+        </div></div>`;
     }
 
-    let currentYear = new Date().getFullYear();
-    let currentMonth = new Date().getMonth() + 1;
-    let rateYear = new Date().getFullYear();
+    let curY=new Date().getFullYear(), curM=new Date().getMonth()+1, rateY=new Date().getFullYear();
 
     function render() {
-      document.getElementById('monthLabel').textContent = `${currentYear}年${currentMonth}月`;
-      renderMonthlySummary();
-      renderEntryList();
+      document.getElementById('monthLabel').textContent=`${curY}年 ${curM}月`;
+      document.getElementById('sectionLabel').textContent=`${curM}月のスケジュール`;
+      renderSummary(); renderList();
+    }
+    function buildDayMap(entries) { const m={}; for(const e of entries){let t=0; for(const s of(e.slots||[]))t+=calcDuration(s.start,s.end); m[e.date]=(m[e.date]||0)+t;} return m; }
+
+    function renderSummary() {
+      const entries=getMonthEntries(curY,curM), days=daysIn(curY,curM), dm=buildDayMap(entries);
+      let total=0,wd=0;
+      for(const v of Object.values(dm)){if(v>0){wd++;total+=v;}}
+      const avg=wd>0?Math.round(total/wd):0;
+      document.getElementById('monthlySummary').innerHTML=`
+        <div class="stat-card peach"><div class="stat-icon">⏱</div><div class="stat-label">合計勤務時間</div><div class="stat-value">${Math.floor(total/60)}<span class="stat-unit"> 時間 ${total%60} 分</span></div></div>
+        <div class="stat-card mint"><div class="stat-icon">📅</div><div class="stat-label">勤務日数</div><div class="stat-value">${wd}<span class="stat-unit"> 日</span></div></div>
+        <div class="stat-card lavender"><div class="stat-icon">📊</div><div class="stat-label">平均勤務時間/日</div><div class="stat-value">${Math.floor(avg/60)}<span class="stat-unit"> 時間 ${avg%60} 分</span></div></div>
+        <div class="stat-card lemon"><div class="stat-icon">☀</div><div class="stat-label">休日日数</div><div class="stat-value">${days-wd}<span class="stat-unit"> 日</span></div></div>`;
     }
 
-    function buildDayMap(entries) {
-      const map = {};
-      for (const e of entries) {
-        let t = 0;
-        for (const s of (e.slots||[])) t += calcDuration(s.start, s.end);
-        map[e.date] = (map[e.date]||0) + t;
-      }
-      return map;
-    }
-
-    function renderMonthlySummary() {
-      const entries = getMonthEntries(currentYear, currentMonth);
-      const days = getDaysInMonth(currentYear, currentMonth);
-      const dm = buildDayMap(entries);
-      let total=0, wd=0;
-      for (const v of Object.values(dm)) { if (v>0) { wd++; total+=v; } }
-      const avg = wd>0 ? Math.round(total/wd) : 0;
-      document.getElementById('monthlySummary').innerHTML = `
-        <div class="summary-card"><div class="label">合計勤務時間</div><div class="value">${formatMinutes(total)}</div></div>
-        <div class="summary-card"><div class="label">勤務日数</div><div class="value">${wd}日</div></div>
-        <div class="summary-card"><div class="label">平均勤務時間/日</div><div class="value">${formatMinutes(avg)}</div></div>
-        <div class="summary-card"><div class="label">休日日数</div><div class="value">${days-wd}日</div></div>
-      `;
-    }
-
-    function renderEntryList() {
-      const entries = getMonthEntries(currentYear, currentMonth);
-      const days = getDaysInMonth(currentYear, currentMonth);
-      const em = {};
-      for (const e of entries) em[e.date] = e;
-      let html = '';
-      for (let d=1; d<=days; d++) {
-        const ds = `${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const dow = getDayOfWeek(currentYear,currentMonth,d);
-        const di = getDowIdx(currentYear,currentMonth,d);
-        const dc = di===0?'sun':di===6?'sat':'';
-        const e = em[ds];
-        if (e && e.slots && e.slots.length>0) {
+    function renderList() {
+      const entries=getMonthEntries(curY,curM), days=daysIn(curY,curM);
+      const em={}; for(const e of entries) em[e.date]=e;
+      let html='';
+      for(let d=1;d<=days;d++){
+        const ds=`${curY}-${String(curM).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dow=dowName(curY,curM,d), dc=dowClass(curY,curM,d), today=isToday(curY,curM,d);
+        const e=em[ds];
+        const todayBadge=today?'<span class="today-badge">TODAY</span>':'';
+        if(e && e.slots && e.slots.length>0){
           let tot=0; e.slots.forEach(s=>tot+=calcDuration(s.start,s.end));
-          if (e.slots.length===1) {
+          if(e.slots.length===1){
             const s=e.slots[0];
-            html += `<div class="entry-item" onclick="openEditModal('${ds}')">
-              <div class="date-info">
-                <span class="date">${currentMonth}/${d}</span>
-                <span class="day ${dc}">(${dow})</span>
-                ${e.memo?`<span class="day" style="margin-left:8px;font-style:italic;">${escapeHtml(e.memo)}</span>`:''}
+            html+=`<div class="day-card has-work ${today?'today':''}" onclick="openEditModal('${ds}')">
+              <div class="day-dot ${dc}">${dow}</div>
+              <div class="day-info">
+                <div class="day-title">${curM}月 ${d}日 ${todayBadge}</div>
+                <div class="day-sub">${s.start} - ${s.end}${e.memo?' · '+esc(e.memo):''}</div>
               </div>
-              <div class="time-info">
-                <div class="times">${s.start} - ${s.end}</div>
-                <div class="duration">${formatMinutes(tot)}</div>
-              </div>
+              <div class="day-hours worked">${fmtMin(tot)}</div>
             </div>`;
           } else {
-            html += `<div class="entry-detail" onclick="openEditModal('${ds}')">
-              <div class="date-header">
-                <span class="date">${currentMonth}/${d} <span class="day ${dc}">(${dow})</span></span>
-                <span class="total">${formatMinutes(tot)}</span>
+            html+=`<div class="day-card-multi" onclick="openEditModal('${ds}')">
+              <div class="multi-header"><div class="day-dot ${dc}">${dow}</div>
+                <div class="day-info"><div class="day-title">${curM}月 ${d}日 ${todayBadge}</div></div>
+                <div class="day-hours worked">${fmtMin(tot)}</div>
               </div>`;
-            for (const s of e.slots) {
-              html += `<div class="time-slot">
-                <span>${s.start} - ${s.end}</span>
-                <span style="font-weight:500;">${formatMinutes(calcDuration(s.start,s.end))}</span>
-              </div>`;
+            for(const s of e.slots){
+              html+=`<div class="slot-row"><span>${s.start} - ${s.end}</span><span>${fmtMin(calcDuration(s.start,s.end))}</span></div>`;
             }
-            if (e.memo) html += `<div class="memo">${escapeHtml(e.memo)}</div>`;
-            html += `</div>`;
+            if(e.memo) html+=`<div class="slot-row" style="color:var(--text-hint);font-style:italic;">${esc(e.memo)}</div>`;
+            html+=`</div>`;
           }
         } else {
-          html += `<div class="entry-item" onclick="openAddModalForDate('${ds}')">
-            <div class="date-info">
-              <span class="date">${currentMonth}/${d}</span>
-              <span class="day ${dc}">(${dow})</span>
+          html+=`<div class="day-card ${today?'today':''}" onclick="openAddModalForDate('${ds}')">
+            <div class="day-dot ${dc}">${dow}</div>
+            <div class="day-info">
+              <div class="day-title">${curM}月 ${d}日 ${todayBadge}</div>
+              <div class="day-sub">${dow}曜日</div>
             </div>
-            <div class="no-work">--</div>
+            <div class="day-hours">--</div>
           </div>`;
         }
       }
-      document.getElementById('entryList').innerHTML = html;
+      document.getElementById('entryList').innerHTML=html;
     }
 
-    function prevMonth() { currentMonth--; if(currentMonth<1){currentMonth=12;currentYear--;} render(); }
-    function nextMonth() { currentMonth++; if(currentMonth>12){currentMonth=1;currentYear++;} render(); }
-
-    function switchPage(page, btn) {
-      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-      document.getElementById('page-'+page).classList.add('active');
-      document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
+    function prevMonth(){curM--;if(curM<1){curM=12;curY--;}render();}
+    function nextMonth(){curM++;if(curM>12){curM=1;curY++;}render();}
+    function switchPage(p,btn){
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+      document.getElementById('page-'+p).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('fab').style.display = page==='monthly'?'flex':'none';
-      document.getElementById('monthNav').style.display = page==='monthly'?'flex':'none';
-      if (page==='rate') renderRatePage();
+      document.getElementById('fab').style.display=p==='monthly'?'flex':'none';
+      document.getElementById('monthNav').style.display=p==='monthly'?'flex':'none';
+      if(p==='rate') renderRatePage();
     }
 
-    // ---- Modal ----
-    function showModal() { document.getElementById('modalOverlay').classList.remove('hidden'); }
-    function hideModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
-    function closeModal(ev) { if(ev.target===document.getElementById('modalOverlay')) hideModal(); }
+    function showModal(){document.getElementById('modalOverlay').classList.remove('hidden');}
+    function hideModal(){document.getElementById('modalOverlay').classList.add('hidden');}
+    function closeModal(ev){if(ev.target===document.getElementById('modalOverlay'))hideModal();}
 
-    function openAddModal() {
-      const today = `${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+    function openAddModal(){
+      const today=`${curY}-${String(curM).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
       openAddModalForDate(today);
     }
-
-    function openAddModalForDate(dateStr) {
-      const modal = document.getElementById('modalContent');
-      modal.innerHTML = `
+    function openAddModalForDate(ds){
+      document.getElementById('modalContent').innerHTML=`
         <h2>勤務時間を追加</h2>
-        <div class="form-group">
-          <label>日付</label>
-          <input type="date" id="inputDate" value="${dateStr}">
-        </div>
-        ${timePickerHtml('start', '開始時刻')}
-        ${timePickerHtml('end', '終了時刻')}
-        <div class="form-group">
-          <label>メモ（任意）</label>
-          <textarea id="inputMemo" rows="2" placeholder="例：まちだ面談"></textarea>
-        </div>
-        <div class="modal-actions">
-          <button class="btn-cancel" onclick="hideModal()">キャンセル</button>
-          <button class="btn-save" onclick="saveEntry()">保存</button>
-        </div>
-      `;
+        <div class="form-group"><label>日付</label><input type="date" id="inputDate" value="${ds}"></div>
+        ${timePicker('start','開始時刻')}${timePicker('end','終了時刻')}
+        <div class="form-group"><label>メモ（任意）</label><textarea id="inputMemo" rows="2" placeholder="例：まちだ面談"></textarea></div>
+        <div class="modal-actions"><button class="btn-cancel" onclick="hideModal()">キャンセル</button><button class="btn-save" onclick="saveEntry()">保存</button></div>`;
       showModal();
     }
-
-    function openEditModal(dateStr) {
-      const entries = getMonthEntries(currentYear, currentMonth);
-      const entry = entries.find(e=>e.date===dateStr);
-      if (!entry) return openAddModalForDate(dateStr);
+    function openEditModal(ds){
+      const entries=getMonthEntries(curY,curM), entry=entries.find(e=>e.date===ds);
+      if(!entry) return openAddModalForDate(ds);
       let tot=0; entry.slots.forEach(s=>tot+=calcDuration(s.start,s.end));
-      const [,mo,da] = dateStr.split('-').map(Number);
-      const dow = getDayOfWeek(currentYear, mo, da);
-
-      let slotsHtml = '';
-      entry.slots.forEach((s,i) => {
-        const dur = calcDuration(s.start,s.end);
-        slotsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
-          <span style="flex:1;">${s.start} - ${s.end} (${formatMinutes(dur)})</span>
-          <button onclick="deleteSlot('${dateStr}',${i})" style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;">✕</button>
+      const [,mo,da]=ds.split('-').map(Number), dow=dowName(curY,mo,da);
+      let slotsHtml='';
+      entry.slots.forEach((s,i)=>{
+        slotsHtml+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0E8E4;">
+          <span style="flex:1;font-size:13px;">${s.start} - ${s.end} (${fmtMin(calcDuration(s.start,s.end))})</span>
+          <button onclick="deleteSlot('${ds}',${i})" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;">✕</button>
         </div>`;
       });
-
-      const modal = document.getElementById('modalContent');
-      modal.innerHTML = `
+      document.getElementById('modalContent').innerHTML=`
         <h2>${mo}/${da}(${dow})の勤務記録</h2>
-        <div style="margin-bottom:12px;">
-          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:4px;">合計: <strong style="color:var(--primary);">${formatMinutes(tot)}</strong></div>
-          ${slotsHtml}
+        <div style="margin-bottom:12px;font-size:13px;color:var(--text-sub);">合計: <strong style="color:var(--peach-dark);">${fmtMin(tot)}</strong></div>
+        ${slotsHtml}
+        ${entry.memo?`<div style="font-size:12px;color:var(--text-hint);margin:8px 0;font-style:italic;">メモ: ${esc(entry.memo)}</div>`:''}
+        <div style="border-top:1px solid #F0E8E4;padding-top:16px;margin-top:8px;">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text-main);">時間を追加</h3>
+          ${timePicker('start','開始時刻')}${timePicker('end','終了時刻')}
+          <div class="form-group"><label>メモ</label><textarea id="inputMemo" rows="2">${entry.memo?esc(entry.memo):''}</textarea></div>
         </div>
-        ${entry.memo?`<div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">メモ: ${escapeHtml(entry.memo)}</div>`:''}
-        <div style="border-top:1px solid var(--border);padding-top:16px;">
-          <h3 style="font-size:15px;margin-bottom:12px;">時間を追加</h3>
-          ${timePickerHtml('start', '開始時刻')}
-          ${timePickerHtml('end', '終了時刻')}
-          <div class="form-group">
-            <label>メモ（任意）</label>
-            <textarea id="inputMemo" rows="2">${entry.memo?escapeHtml(entry.memo):''}</textarea>
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button class="btn-cancel" onclick="hideModal()">閉じる</button>
-          <button class="btn-save" onclick="addSlotToDate('${dateStr}')">追加</button>
-        </div>
-        <div style="margin-top:12px;">
-          <button onclick="deleteDate('${dateStr}')" style="width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;cursor:pointer;background:var(--danger);color:white;">この日の記録を全て削除</button>
-        </div>
-      `;
+        <div class="modal-actions"><button class="btn-cancel" onclick="hideModal()">閉じる</button><button class="btn-save" onclick="addSlotToDate('${ds}')">追加</button></div>
+        <button class="btn-delete-full" onclick="deleteDate('${ds}')">この日の記録を全て削除</button>`;
       showModal();
     }
 
-    // ---- CRUD ----
-    function saveEntry() {
-      const dateStr = document.getElementById('inputDate').value;
-      const start = getTimeFromSelects('start');
-      const end = getTimeFromSelects('end');
-      const memo = document.getElementById('inputMemo').value.trim();
-      if (!dateStr || !start || !end) { alert('日付、開始時刻、終了時刻を入力してください。'); return; }
-      const [y,m] = dateStr.split('-').map(Number);
-      const entries = getMonthEntries(y,m);
-      let entry = entries.find(e=>e.date===dateStr);
-      if (entry) { entry.slots.push({start,end}); if(memo) entry.memo=memo; }
-      else entries.push({date:dateStr, slots:[{start,end}], memo});
+    function saveEntry(){
+      const ds=document.getElementById('inputDate').value, start=getTime('start'), end=getTime('end'), memo=document.getElementById('inputMemo').value.trim();
+      if(!ds||!start||!end){alert('日付、開始時刻、終了時刻を入力してください。');return;}
+      const [y,m]=ds.split('-').map(Number), entries=getMonthEntries(y,m);
+      let e=entries.find(x=>x.date===ds);
+      if(e){e.slots.push({start,end});if(memo)e.memo=memo;} else entries.push({date:ds,slots:[{start,end}],memo});
       setMonthEntries(y,m,entries);
-      if (y!==currentYear||m!==currentMonth) { currentYear=y; currentMonth=m; }
-      hideModal();
-      render();
+      if(y!==curY||m!==curM){curY=y;curM=m;} hideModal(); render();
     }
-
-    function addSlotToDate(dateStr) {
-      const start = getTimeFromSelects('start');
-      const end = getTimeFromSelects('end');
-      const memo = document.getElementById('inputMemo').value.trim();
-      if (!start || !end) { alert('開始時刻と終了時刻を入力してください。'); return; }
-      const [y,m] = dateStr.split('-').map(Number);
-      const entries = getMonthEntries(y,m);
-      let entry = entries.find(e=>e.date===dateStr);
-      if (entry) { entry.slots.push({start,end}); entry.memo=memo; }
-      else entries.push({date:dateStr, slots:[{start,end}], memo});
-      setMonthEntries(y,m,entries);
-      hideModal();
-      render();
+    function addSlotToDate(ds){
+      const start=getTime('start'),end=getTime('end'),memo=document.getElementById('inputMemo').value.trim();
+      if(!start||!end){alert('開始時刻と終了時刻を入力してください。');return;}
+      const [y,m]=ds.split('-').map(Number), entries=getMonthEntries(y,m);
+      let e=entries.find(x=>x.date===ds);
+      if(e){e.slots.push({start,end});e.memo=memo;} else entries.push({date:ds,slots:[{start,end}],memo});
+      setMonthEntries(y,m,entries); hideModal(); render();
     }
-
-    function deleteSlot(dateStr, idx) {
-      if (!confirm('この時間帯を削除しますか？')) return;
-      const [y,m] = dateStr.split('-').map(Number);
-      const entries = getMonthEntries(y,m);
-      const entry = entries.find(e=>e.date===dateStr);
-      if (!entry) return;
-      entry.slots.splice(idx,1);
-      if (entry.slots.length===0) entries.splice(entries.indexOf(entry),1);
-      setMonthEntries(y,m,entries);
-      hideModal(); render();
+    function deleteSlot(ds,idx){
+      if(!confirm('この時間帯を削除しますか？'))return;
+      const [y,m]=ds.split('-').map(Number), entries=getMonthEntries(y,m), e=entries.find(x=>x.date===ds);
+      if(!e)return; e.slots.splice(idx,1);
+      if(e.slots.length===0) entries.splice(entries.indexOf(e),1);
+      setMonthEntries(y,m,entries); hideModal(); render();
     }
-
-    function deleteDate(dateStr) {
-      if (!confirm('この日の記録を全て削除しますか？')) return;
-      const [y,m] = dateStr.split('-').map(Number);
-      const entries = getMonthEntries(y,m);
-      const idx = entries.findIndex(e=>e.date===dateStr);
-      if (idx>=0) entries.splice(idx,1);
-      setMonthEntries(y,m,entries);
-      hideModal(); render();
+    function deleteDate(ds){
+      if(!confirm('この日の記録を全て削除しますか？'))return;
+      const [y,m]=ds.split('-').map(Number), entries=getMonthEntries(y,m);
+      const i=entries.findIndex(x=>x.date===ds); if(i>=0) entries.splice(i,1);
+      setMonthEntries(y,m,entries); hideModal(); render();
     }
 
     // ---- Rate Page ----
-    function renderRatePage() {
-      const income = parseInt(localStorage.getItem(INCOME_KEY)) || 0;
-      document.getElementById('annualIncome').value = income || '';
-      document.getElementById('rateYearLabel').textContent = `${rateYear}年`;
-      let yt=0, ywd=0, yrd=0, rows='';
-      for (let m=1;m<=12;m++) {
-        const entries = getMonthEntries(rateYear,m);
-        const dim = getDaysInMonth(rateYear,m);
-        const dm = buildDayMap(entries);
-        let mm=0, mwd=0;
-        for (const v of Object.values(dm)) { if(v>0){mwd++;mm+=v;} }
-        const mrd = dim-mwd;
-        const avg = mwd>0?Math.round(mm/mwd):0;
+    function renderRatePage(){
+      document.getElementById('rateYearLabel').textContent=`${rateY}年`;
+      const incomes=loadIncomes();
+
+      // Monthly income inputs
+      let incHtml='';
+      for(let m=1;m<=12;m++){
+        const key=`${rateY}-${String(m).padStart(2,'0')}`;
+        const val=incomes[key]||'';
+        incHtml+=`<div class="income-row">
+          <label>${m}月</label>
+          <input type="number" inputmode="numeric" placeholder="0" value="${val}" onchange="saveMonthIncome('${key}',this.value)">
+          <span class="unit">円</span>
+        </div>`;
+      }
+      document.getElementById('monthlyIncomeInputs').innerHTML=incHtml;
+
+      // Calc annual total
+      let annualIncome=0;
+      for(let m=1;m<=12;m++){
+        const key=`${rateY}-${String(m).padStart(2,'0')}`;
+        annualIncome+=parseInt(incomes[key])||0;
+      }
+      document.getElementById('annualIncomeTotal').textContent='¥'+annualIncome.toLocaleString();
+
+      // Year summary table
+      let yt=0,ywd=0,yrd=0,rows='';
+      for(let m=1;m<=12;m++){
+        const entries=getMonthEntries(rateY,m), dim=daysIn(rateY,m), dm=buildDayMap(entries);
+        let mm=0,mwd=0;
+        for(const v of Object.values(dm)){if(v>0){mwd++;mm+=v;}}
+        const mrd=dim-mwd, avg=mwd>0?Math.round(mm/mwd):0;
         yt+=mm; ywd+=mwd; yrd+=mrd;
-        const has = mm>0;
-        rows += `<tr style="color:${has?'inherit':'#ccc'}">
-          <td>${m}月</td>
-          <td class="num">${has?formatHHMM(mm):'--'}</td>
-          <td class="num">${has?mwd+'日':'--'}</td>
-          <td class="num">${has?formatMinutes(avg):'--'}</td>
-          <td class="num">${has?mrd+'日':'--'}</td>
+        const has=mm>0;
+        const mKey=`${rateY}-${String(m).padStart(2,'0')}`;
+        const mInc=parseInt(incomes[mKey])||0;
+        rows+=`<tr style="color:${has?'var(--text-main)':'var(--text-hint)'}">
+          <td>${m}月</td><td class="num">${has?fmtHM(mm):'--'}</td>
+          <td class="num">${has?mwd+'日':'--'}</td><td class="num">${has?fmtMin(avg):'--'}</td>
+          <td class="num" style="color:${mInc?'var(--peach-dark)':'inherit'}">${mInc?'¥'+mInc.toLocaleString():'--'}</td>
         </tr>`;
       }
-      const yavg = ywd>0?Math.round(yt/ywd):0;
-      rows += `<tr><td>合計</td><td class="num">${formatHHMM(yt)}</td><td class="num">${ywd}日</td><td class="num">${formatMinutes(yavg)}</td><td class="num">${yrd}日</td></tr>`;
-      document.getElementById('yearSummaryTable').innerHTML = `<table class="year-table"><thead><tr><th>月</th><th class="num">合計時間</th><th class="num">勤務日数</th><th class="num">平均/日</th><th class="num">休日</th></tr></thead><tbody>${rows}</tbody></table>`;
-      const yh = yt/60;
-      const rate = yh>0?Math.round(income/yh):0;
-      document.getElementById('rateResult').innerHTML = `
-        <div class="rate-label">年間勤務 ${Math.round(yh)}時間 × 時間単価</div>
+      const yavg=ywd>0?Math.round(yt/ywd):0;
+      rows+=`<tr><td>合計</td><td class="num">${fmtHM(yt)}</td><td class="num">${ywd}日</td><td class="num">${fmtMin(yavg)}</td><td class="num" style="color:var(--peach-dark);">¥${annualIncome.toLocaleString()}</td></tr>`;
+      document.getElementById('yearSummaryTable').innerHTML=`<table class="year-table"><thead><tr><th>月</th><th class="num">時間</th><th class="num">日数</th><th class="num">平均</th><th class="num">月収</th></tr></thead><tbody>${rows}</tbody></table>`;
+
+      const yh=yt/60, rate=yh>0?Math.round(annualIncome/yh):0;
+      document.getElementById('rateResult').innerHTML=`
+        <div class="rate-label">年間勤務 ${Math.round(yh)}時間</div>
         <div class="rate-value">${rate>0?'¥'+rate.toLocaleString():'--'}</div>
-        <div class="rate-label" style="margin-top:4px;">/ 1時間あたり</div>
-      `;
+        <div class="rate-label" style="margin-top:4px;">1時間あたり</div>`;
     }
-    function changeRateYear(d) { rateYear+=d; renderRatePage(); }
-    function saveIncome() { localStorage.setItem(INCOME_KEY, document.getElementById('annualIncome').value); }
+    function changeRateYear(d){rateY+=d;renderRatePage();}
+    function saveMonthIncome(key,val){
+      const inc=loadIncomes(); inc[key]=val; saveIncomes(inc);
+      renderRatePage();
+    }
 
     // ---- Settings ----
-    function exportData() {
-      const blob = new Blob([JSON.stringify({workHours:loadData(), annualIncome:localStorage.getItem(INCOME_KEY)},null,2)], {type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `work-hours-${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
+    function exportData(){
+      const blob=new Blob([JSON.stringify({workHours:loadData(),monthlyIncomes:loadIncomes()},null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download=`work-hours-${new Date().toISOString().slice(0,10)}.json`; a.click();
     }
-    function importData(ev) {
-      const f = ev.target.files[0]; if(!f) return;
-      const r = new FileReader();
-      r.onload = function(e) {
-        try {
-          const d = JSON.parse(e.target.result);
+    function importData(ev){
+      const f=ev.target.files[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload=function(e){
+        try{
+          const d=JSON.parse(e.target.result);
           if(d.workHours) saveData(d.workHours);
-          if(d.annualIncome) localStorage.setItem(INCOME_KEY, d.annualIncome);
+          if(d.monthlyIncomes) saveIncomes(d.monthlyIncomes);
+          if(d.annualIncome){const inc=loadIncomes();inc.legacy=d.annualIncome;saveIncomes(inc);}
           alert('インポートが完了しました。'); render();
-        } catch { alert('ファイルの読み込みに失敗しました。'); }
+        }catch{alert('ファイルの読み込みに失敗しました。');}
       };
       r.readAsText(f); ev.target.value='';
     }
-    function clearAllData() {
-      if(!confirm('全てのデータを削除しますか？この操作は取り消せません。')) return;
-      if(!confirm('本当に削除しますか？')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(INCOME_KEY);
+    function clearAllData(){
+      if(!confirm('全てのデータを削除しますか？'))return;
+      if(!confirm('本当に削除しますか？'))return;
+      localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(INCOME_KEY);
       render(); alert('全データを削除しました。');
     }
 
     render();
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
   </script>
 </body>
 </html>
