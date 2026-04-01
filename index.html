@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a73e8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>稼働時間管理</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --text: #202124;
+      --text-secondary: #5f6368;
+      --border: #dadce0;
+      --danger: #d93025;
+    }
+    body {
+      font-family: 'Segoe UI', 'Roboto', 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 70px;
+    }
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .header h1 { font-size: 18px; font-weight: 500; }
+    .header .month-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .header .month-nav button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .header .month-nav button:active { background: rgba(255,255,255,0.4); }
+    .header .month-label { font-size: 20px; font-weight: 500; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+    }
+    .bottom-nav button {
+      flex: 1;
+      padding: 8px 0;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .bottom-nav button.active { color: var(--primary); }
+    .bottom-nav button .icon { font-size: 22px; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 12px;
+    }
+    .summary-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .summary-card .label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .summary-card .value { font-size: 22px; font-weight: 600; }
+    .entry-list { padding: 0 12px 12px; }
+    .entry-item {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .entry-item:active { background: #f0f0f0; }
+    .entry-item .date-info { flex: 1; }
+    .entry-item .date-info .date { font-size: 15px; font-weight: 500; }
+    .entry-item .date-info .day { font-size: 12px; color: var(--text-secondary); }
+    .entry-item .date-info .day.sun { color: var(--danger); }
+    .entry-item .date-info .day.sat { color: var(--primary); }
+    .entry-item .time-info { text-align: right; }
+    .entry-item .time-info .times { font-size: 13px; color: var(--text-secondary); }
+    .entry-item .time-info .duration { font-size: 16px; font-weight: 600; color: var(--primary); }
+    .entry-item .no-work { font-size: 13px; color: #bbb; }
+    .entry-detail {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .entry-detail:active { background: #f0f0f0; }
+    .entry-detail .date-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .entry-detail .date-header .date { font-size: 15px; font-weight: 500; }
+    .entry-detail .date-header .total { font-size: 16px; font-weight: 600; color: var(--primary); }
+    .entry-detail .time-slot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .entry-detail .time-slot:last-of-type { border-bottom: none; }
+    .entry-detail .memo { font-size: 12px; color: var(--text-secondary); margin-top: 4px; font-style: italic; }
+    .fab {
+      position: fixed;
+      bottom: 80px;
+      right: 16px;
+      width: 56px;
+      height: 56px;
+      border-radius: 28px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-size: 28px;
+      box-shadow: 0 4px 12px rgba(26,115,232,0.4);
+      cursor: pointer;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fab:active { background: var(--primary-dark); transform: scale(0.95); }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal {
+      background: var(--card);
+      border-radius: 20px 20px 0 0;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal h2 { font-size: 18px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-group input, .form-group textarea, .form-group select {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      background: white;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+    }
+    .form-group input, .form-group textarea { width: 100%; }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+
+    /* Time picker row */
+    .time-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .time-picker-row select {
+      flex: 1;
+      padding: 12px 4px;
+      font-size: 18px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .time-picker-row select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+    }
+    .time-picker-row .colon { font-size: 20px; font-weight: bold; }
+    .btn-now {
+      padding: 10px 14px;
+      background: #e8f0fe;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-now:active { background: #d2e3fc; }
+
+    .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .modal-actions button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-cancel { background: #e8eaed; color: var(--text); }
+    .btn-save { background: var(--primary); color: white; }
+    .btn-save:active { background: var(--primary-dark); }
+    .page { display: none; }
+    .page.active { display: block; }
+    .rate-page { padding: 12px; }
+    .rate-section {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .rate-section h3 {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+    .rate-input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .rate-input-row label { font-size: 14px; min-width: 60px; }
+    .rate-input-row input {
+      flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 16px; outline: none; text-align: right;
+    }
+    .rate-input-row .unit { font-size: 14px; color: var(--text-secondary); }
+    .rate-result {
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #e8f0fe, #d2e3fc);
+      border-radius: 12px;
+    }
+    .rate-result .rate-label { font-size: 14px; color: var(--text-secondary); }
+    .rate-result .rate-value { font-size: 36px; font-weight: 700; color: var(--primary); margin-top: 4px; }
+    .year-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .year-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid var(--border); font-size: 11px; color: var(--text-secondary); }
+    .year-table td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
+    .year-table tr:last-child td { border-bottom: none; font-weight: 600; }
+    .year-table .num { text-align: right; }
+    .year-selector { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px; }
+    .year-selector button { background: white; border: 1px solid var(--border); width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+    .year-selector .year-label { font-size: 16px; font-weight: 500; }
+    .settings-page { padding: 12px; }
+    .settings-section {
+      background: var(--card); border-radius: 12px; padding: 16px;
+      margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .settings-section h3 { font-size: 14px; margin-bottom: 12px; }
+    .settings-btn {
+      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--card); font-size: 14px; cursor: pointer; margin-bottom: 8px; text-align: left;
+    }
+    .settings-btn:active { background: #f0f0f0; }
+    .settings-btn.danger { color: var(--danger); border-color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="header" id="header">
+    <h1>稼働時間管理</h1>
+    <div class="month-nav" id="monthNav">
+      <button onclick="prevMonth()">&#9664;</button>
+      <span class="month-label" id="monthLabel"></span>
+      <button onclick="nextMonth()">&#9654;</button>
+    </div>
+  </div>
+
+  <div class="page active" id="page-monthly">
+    <div class="summary-grid" id="monthlySummary"></div>
+    <div class="entry-list" id="entryList"></div>
+  </div>
+
+  <div class="page" id="page-rate">
+    <div class="rate-page">
+      <div class="rate-section">
+        <h3>収入設定</h3>
+        <div class="rate-input-row">
+          <label>年収</label>
+          <input type="number" id="annualIncome" placeholder="9000000" inputmode="numeric" onchange="saveIncome(); renderRatePage();">
+          <span class="unit">円</span>
+        </div>
+      </div>
+      <div class="rate-section">
+        <div class="year-selector">
+          <button onclick="changeRateYear(-1)">&#9664;</button>
+          <span class="year-label" id="rateYearLabel"></span>
+          <button onclick="changeRateYear(1)">&#9654;</button>
+        </div>
+        <div id="yearSummaryTable"></div>
+      </div>
+      <div class="rate-section">
+        <div class="rate-result" id="rateResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-settings">
+    <div class="settings-page">
+      <div class="settings-section">
+        <h3>データ管理</h3>
+        <button class="settings-btn" onclick="exportData()">データをエクスポート (JSON)</button>
+        <button class="settings-btn" onclick="document.getElementById('importFile').click()">データをインポート</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="settings-section">
+        <h3>注意</h3>
+        <button class="settings-btn danger" onclick="clearAllData()">全データを削除</button>
+      </div>
+      <div class="settings-section" style="text-align:center; color: var(--text-secondary); font-size: 12px;">
+        <p>稼働時間管理 v1.0</p>
+        <p style="margin-top:4px;">データはこの端末のブラウザ内(localStorage)に保存されます。</p>
+        <p style="margin-top:4px;">サーバーへの送信は一切ありません。</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" id="fab" onclick="openAddModal()">+</button>
+
+  <div class="bottom-nav">
+    <button class="active" onclick="switchPage('monthly', this)">
+      <span class="icon">📅</span>月別
+    </button>
+    <button onclick="switchPage('rate', this)">
+      <span class="icon">💰</span>時間単価
+    </button>
+    <button onclick="switchPage('settings', this)">
+      <span class="icon">⚙</span>設定
+    </button>
+  </div>
+
+  <div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal" id="modalContent" onclick="event.stopPropagation()">
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'workHoursData';
+    const INCOME_KEY = 'annualIncome';
+
+    function loadData() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch { return {}; }
+    }
+    function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+    function getMonthEntries(year, month) {
+      const data = loadData();
+      return data[`${year}-${String(month).padStart(2,'0')}`] || [];
+    }
+    function setMonthEntries(year, month, entries) {
+      const data = loadData();
+      data[`${year}-${String(month).padStart(2,'0')}`] = entries;
+      saveData(data);
+    }
+
+    function parseTime(t) {
+      if (!t) return null;
+      const [h,m] = t.split(':').map(Number);
+      return h * 60 + m;
+    }
+    function calcDuration(start, end) {
+      const s = parseTime(start), e = parseTime(end);
+      if (s === null || e === null) return 0;
+      let diff = e - s;
+      if (diff < 0) diff += 1440;
+      return diff;
+    }
+    function formatMinutes(min) {
+      return `${Math.floor(min/60)}時間${min%60}分`;
+    }
+    function formatHHMM(min) {
+      return `${Math.floor(min/60)}:${String(min%60).padStart(2,'0')}`;
+    }
+    function getDaysInMonth(y,m) { return new Date(y,m,0).getDate(); }
+    function getDayOfWeek(y,m,d) { return ['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()]; }
+    function getDowIdx(y,m,d) { return new Date(y,m-1,d).getDay(); }
+    function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    // Generate hour/minute options
+    function hourOptions(selected) {
+      let html = '<option value="">--</option>';
+      for (let h=0; h<24; h++) {
+        const v = String(h).padStart(2,'0');
+        html += `<option value="${v}" ${v===selected?'selected':''}>${h}</option>`;
+      }
+      return html;
+    }
+    function minuteOptions(selected) {
+      let html = '<option value="">--</option>';
+      for (let m=0; m<60; m+=10) {
+        const v = String(m).padStart(2,'0');
+        html += `<option value="${v}" ${v===selected?'selected':''}>${v}</option>`;
+      }
+      return html;
+    }
+    function getTimeFromSelects(prefix) {
+      const h = document.getElementById(prefix+'H').value;
+      const m = document.getElementById(prefix+'M').value;
+      if (!h || !m) return '';
+      return `${h}:${m}`;
+    }
+    function setNow(prefix) {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2,'0');
+      const m = String(Math.round(now.getMinutes()/10)*10 % 60).padStart(2,'0');
+      document.getElementById(prefix+'H').value = h;
+      document.getElementById(prefix+'M').value = m;
+    }
+    function timePickerHtml(prefix, label, startH, startM) {
+      return `
+        <div class="form-group">
+          <label>${label}</label>
+          <div class="time-picker-row">
+            <select id="${prefix}H">${hourOptions(startH||'')}</select>
+            <span class="colon">:</span>
+            <select id="${prefix}M">${minuteOptions(startM||'')}</select>
+            <button type="button" class="btn-now" onclick="setNow('${prefix}')">今</button>
+          </div>
+        </div>
+      `;
+    }
+
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth() + 1;
+    let rateYear = new Date().getFullYear();
+
+    function render() {
+      document.getElementById('monthLabel').textContent = `${currentYear}年${currentMonth}月`;
+      renderMonthlySummary();
+      renderEntryList();
+    }
+
+    function buildDayMap(entries) {
+      const map = {};
+      for (const e of entries) {
+        let t = 0;
+        for (const s of (e.slots||[])) t += calcDuration(s.start, s.end);
+        map[e.date] = (map[e.date]||0) + t;
+      }
+      return map;
+    }
+
+    function renderMonthlySummary() {
+      const entries = getMonthEntries(currentYear, currentMonth);
+      const days = getDaysInMonth(currentYear, currentMonth);
+      const dm = buildDayMap(entries);
+      let total=0, wd=0;
+      for (const v of Object.values(dm)) { if (v>0) { wd++; total+=v; } }
+      const avg = wd>0 ? Math.round(total/wd) : 0;
+      document.getElementById('monthlySummary').innerHTML = `
+        <div class="summary-card"><div class="label">合計勤務時間</div><div class="value">${formatMinutes(total)}</div></div>
+        <div class="summary-card"><div class="label">勤務日数</div><div class="value">${wd}日</div></div>
+        <div class="summary-card"><div class="label">平均勤務時間/日</div><div class="value">${formatMinutes(avg)}</div></div>
+        <div class="summary-card"><div class="label">休日日数</div><div class="value">${days-wd}日</div></div>
+      `;
+    }
+
+    function renderEntryList() {
+      const entries = getMonthEntries(currentYear, currentMonth);
+      const days = getDaysInMonth(currentYear, currentMonth);
+      const em = {};
+      for (const e of entries) em[e.date] = e;
+      let html = '';
+      for (let d=1; d<=days; d++) {
+        const ds = `${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const dow = getDayOfWeek(currentYear,currentMonth,d);
+        const di = getDowIdx(currentYear,currentMonth,d);
+        const dc = di===0?'sun':di===6?'sat':'';
+        const e = em[ds];
+        if (e && e.slots && e.slots.length>0) {
+          let tot=0; e.slots.forEach(s=>tot+=calcDuration(s.start,s.end));
+          if (e.slots.length===1) {
+            const s=e.slots[0];
+            html += `<div class="entry-item" onclick="openEditModal('${ds}')">
+              <div class="date-info">
+                <span class="date">${currentMonth}/${d}</span>
+                <span class="day ${dc}">(${dow})</span>
+                ${e.memo?`<span class="day" style="margin-left:8px;font-style:italic;">${escapeHtml(e.memo)}</span>`:''}
+              </div>
+              <div class="time-info">
+                <div class="times">${s.start} - ${s.end}</div>
+                <div class="duration">${formatMinutes(tot)}</div>
+              </div>
+            </div>`;
+          } else {
+            html += `<div class="entry-detail" onclick="openEditModal('${ds}')">
+              <div class="date-header">
+                <span class="date">${currentMonth}/${d} <span class="day ${dc}">(${dow})</span></span>
+                <span class="total">${formatMinutes(tot)}</span>
+              </div>`;
+            for (const s of e.slots) {
+              html += `<div class="time-slot">
+                <span>${s.start} - ${s.end}</span>
+                <span style="font-weight:500;">${formatMinutes(calcDuration(s.start,s.end))}</span>
+              </div>`;
+            }
+            if (e.memo) html += `<div class="memo">${escapeHtml(e.memo)}</div>`;
+            html += `</div>`;
+          }
+        } else {
+          html += `<div class="entry-item" onclick="openAddModalForDate('${ds}')">
+            <div class="date-info">
+              <span class="date">${currentMonth}/${d}</span>
+              <span class="day ${dc}">(${dow})</span>
+            </div>
+            <div class="no-work">--</div>
+          </div>`;
+        }
+      }
+      document.getElementById('entryList').innerHTML = html;
+    }
+
+    function prevMonth() { currentMonth--; if(currentMonth<1){currentMonth=12;currentYear--;} render(); }
+    function nextMonth() { currentMonth++; if(currentMonth>12){currentMonth=1;currentYear++;} render(); }
+
+    function switchPage(page, btn) {
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('page-'+page).classList.add('active');
+      document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('fab').style.display = page==='monthly'?'flex':'none';
+      document.getElementById('monthNav').style.display = page==='monthly'?'flex':'none';
+      if (page==='rate') renderRatePage();
+    }
+
+    // ---- Modal ----
+    function showModal() { document.getElementById('modalOverlay').classList.remove('hidden'); }
+    function hideModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+    function closeModal(ev) { if(ev.target===document.getElementById('modalOverlay')) hideModal(); }
+
+    function openAddModal() {
+      const today = `${currentYear}-${String(currentMonth).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+      openAddModalForDate(today);
+    }
+
+    function openAddModalForDate(dateStr) {
+      const modal = document.getElementById('modalContent');
+      modal.innerHTML = `
+        <h2>勤務時間を追加</h2>
+        <div class="form-group">
+          <label>日付</label>
+          <input type="date" id="inputDate" value="${dateStr}">
+        </div>
+        ${timePickerHtml('start', '開始時刻')}
+        ${timePickerHtml('end', '終了時刻')}
+        <div class="form-group">
+          <label>メモ（任意）</label>
+          <textarea id="inputMemo" rows="2" placeholder="例：まちだ面談"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="hideModal()">キャンセル</button>
+          <button class="btn-save" onclick="saveEntry()">保存</button>
+        </div>
+      `;
+      showModal();
+    }
+
+    function openEditModal(dateStr) {
+      const entries = getMonthEntries(currentYear, currentMonth);
+      const entry = entries.find(e=>e.date===dateStr);
+      if (!entry) return openAddModalForDate(dateStr);
+      let tot=0; entry.slots.forEach(s=>tot+=calcDuration(s.start,s.end));
+      const [,mo,da] = dateStr.split('-').map(Number);
+      const dow = getDayOfWeek(currentYear, mo, da);
+
+      let slotsHtml = '';
+      entry.slots.forEach((s,i) => {
+        const dur = calcDuration(s.start,s.end);
+        slotsHtml += `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="flex:1;">${s.start} - ${s.end} (${formatMinutes(dur)})</span>
+          <button onclick="deleteSlot('${dateStr}',${i})" style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;">✕</button>
+        </div>`;
+      });
+
+      const modal = document.getElementById('modalContent');
+      modal.innerHTML = `
+        <h2>${mo}/${da}(${dow})の勤務記録</h2>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:4px;">合計: <strong style="color:var(--primary);">${formatMinutes(tot)}</strong></div>
+          ${slotsHtml}
+        </div>
+        ${entry.memo?`<div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">メモ: ${escapeHtml(entry.memo)}</div>`:''}
+        <div style="border-top:1px solid var(--border);padding-top:16px;">
+          <h3 style="font-size:15px;margin-bottom:12px;">時間を追加</h3>
+          ${timePickerHtml('start', '開始時刻')}
+          ${timePickerHtml('end', '終了時刻')}
+          <div class="form-group">
+            <label>メモ（任意）</label>
+            <textarea id="inputMemo" rows="2">${entry.memo?escapeHtml(entry.memo):''}</textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="hideModal()">閉じる</button>
+          <button class="btn-save" onclick="addSlotToDate('${dateStr}')">追加</button>
+        </div>
+        <div style="margin-top:12px;">
+          <button onclick="deleteDate('${dateStr}')" style="width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;cursor:pointer;background:var(--danger);color:white;">この日の記録を全て削除</button>
+        </div>
+      `;
+      showModal();
+    }
+
+    // ---- CRUD ----
+    function saveEntry() {
+      const dateStr = document.getElementById('inputDate').value;
+      const start = getTimeFromSelects('start');
+      const end = getTimeFromSelects('end');
+      const memo = document.getElementById('inputMemo').value.trim();
+      if (!dateStr || !start || !end) { alert('日付、開始時刻、終了時刻を入力してください。'); return; }
+      const [y,m] = dateStr.split('-').map(Number);
+      const entries = getMonthEntries(y,m);
+      let entry = entries.find(e=>e.date===dateStr);
+      if (entry) { entry.slots.push({start,end}); if(memo) entry.memo=memo; }
+      else entries.push({date:dateStr, slots:[{start,end}], memo});
+      setMonthEntries(y,m,entries);
+      if (y!==currentYear||m!==currentMonth) { currentYear=y; currentMonth=m; }
+      hideModal();
+      render();
+    }
+
+    function addSlotToDate(dateStr) {
+      const start = getTimeFromSelects('start');
+      const end = getTimeFromSelects('end');
+      const memo = document.getElementById('inputMemo').value.trim();
+      if (!start || !end) { alert('開始時刻と終了時刻を入力してください。'); return; }
+      const [y,m] = dateStr.split('-').map(Number);
+      const entries = getMonthEntries(y,m);
+      let entry = entries.find(e=>e.date===dateStr);
+      if (entry) { entry.slots.push({start,end}); entry.memo=memo; }
+      else entries.push({date:dateStr, slots:[{start,end}], memo});
+      setMonthEntries(y,m,entries);
+      hideModal();
+      render();
+    }
+
+    function deleteSlot(dateStr, idx) {
+      if (!confirm('この時間帯を削除しますか？')) return;
+      const [y,m] = dateStr.split('-').map(Number);
+      const entries = getMonthEntries(y,m);
+      const entry = entries.find(e=>e.date===dateStr);
+      if (!entry) return;
+      entry.slots.splice(idx,1);
+      if (entry.slots.length===0) entries.splice(entries.indexOf(entry),1);
+      setMonthEntries(y,m,entries);
+      hideModal(); render();
+    }
+
+    function deleteDate(dateStr) {
+      if (!confirm('この日の記録を全て削除しますか？')) return;
+      const [y,m] = dateStr.split('-').map(Number);
+      const entries = getMonthEntries(y,m);
+      const idx = entries.findIndex(e=>e.date===dateStr);
+      if (idx>=0) entries.splice(idx,1);
+      setMonthEntries(y,m,entries);
+      hideModal(); render();
+    }
+
+    // ---- Rate Page ----
+    function renderRatePage() {
+      const income = parseInt(localStorage.getItem(INCOME_KEY)) || 0;
+      document.getElementById('annualIncome').value = income || '';
+      document.getElementById('rateYearLabel').textContent = `${rateYear}年`;
+      let yt=0, ywd=0, yrd=0, rows='';
+      for (let m=1;m<=12;m++) {
+        const entries = getMonthEntries(rateYear,m);
+        const dim = getDaysInMonth(rateYear,m);
+        const dm = buildDayMap(entries);
+        let mm=0, mwd=0;
+        for (const v of Object.values(dm)) { if(v>0){mwd++;mm+=v;} }
+        const mrd = dim-mwd;
+        const avg = mwd>0?Math.round(mm/mwd):0;
+        yt+=mm; ywd+=mwd; yrd+=mrd;
+        const has = mm>0;
+        rows += `<tr style="color:${has?'inherit':'#ccc'}">
+          <td>${m}月</td>
+          <td class="num">${has?formatHHMM(mm):'--'}</td>
+          <td class="num">${has?mwd+'日':'--'}</td>
+          <td class="num">${has?formatMinutes(avg):'--'}</td>
+          <td class="num">${has?mrd+'日':'--'}</td>
+        </tr>`;
+      }
+      const yavg = ywd>0?Math.round(yt/ywd):0;
+      rows += `<tr><td>合計</td><td class="num">${formatHHMM(yt)}</td><td class="num">${ywd}日</td><td class="num">${formatMinutes(yavg)}</td><td class="num">${yrd}日</td></tr>`;
+      document.getElementById('yearSummaryTable').innerHTML = `<table class="year-table"><thead><tr><th>月</th><th class="num">合計時間</th><th class="num">勤務日数</th><th class="num">平均/日</th><th class="num">休日</th></tr></thead><tbody>${rows}</tbody></table>`;
+      const yh = yt/60;
+      const rate = yh>0?Math.round(income/yh):0;
+      document.getElementById('rateResult').innerHTML = `
+        <div class="rate-label">年間勤務 ${Math.round(yh)}時間 × 時間単価</div>
+        <div class="rate-value">${rate>0?'¥'+rate.toLocaleString():'--'}</div>
+        <div class="rate-label" style="margin-top:4px;">/ 1時間あたり</div>
+      `;
+    }
+    function changeRateYear(d) { rateYear+=d; renderRatePage(); }
+    function saveIncome() { localStorage.setItem(INCOME_KEY, document.getElementById('annualIncome').value); }
+
+    // ---- Settings ----
+    function exportData() {
+      const blob = new Blob([JSON.stringify({workHours:loadData(), annualIncome:localStorage.getItem(INCOME_KEY)},null,2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `work-hours-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+    function importData(ev) {
+      const f = ev.target.files[0]; if(!f) return;
+      const r = new FileReader();
+      r.onload = function(e) {
+        try {
+          const d = JSON.parse(e.target.result);
+          if(d.workHours) saveData(d.workHours);
+          if(d.annualIncome) localStorage.setItem(INCOME_KEY, d.annualIncome);
+          alert('インポートが完了しました。'); render();
+        } catch { alert('ファイルの読み込みに失敗しました。'); }
+      };
+      r.readAsText(f); ev.target.value='';
+    }
+    function clearAllData() {
+      if(!confirm('全てのデータを削除しますか？この操作は取り消せません。')) return;
+      if(!confirm('本当に削除しますか？')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(INCOME_KEY);
+      render(); alert('全データを削除しました。');
+    }
+
+    render();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  </script>
+</body>
+</html>
