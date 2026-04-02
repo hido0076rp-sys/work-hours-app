@@ -1,0 +1,14 @@
+# データファイル（個人情報・年収データなど）
+import-data.json
+*.json.bak
+
+# Node.js
+node_modules/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# エディタ設定
+.vscode/
+*.log
