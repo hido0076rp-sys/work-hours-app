@@ -413,9 +413,21 @@
     function isToday(y,m,d) { const t=new Date(); return t.getFullYear()===y && t.getMonth()+1===m && t.getDate()===d; }
 
     function hourOpts(sel) { let h='<option value="">--</option>'; for(let i=0;i<24;i++){const v=String(i).padStart(2,'0'); h+=`<option value="${v}" ${v===sel?'selected':''}>${i}</option>`;} return h; }
-    function minOpts(sel) { let h='<option value="">--</option>'; for(let i=0;i<60;i+=10){const v=String(i).padStart(2,'0'); h+=`<option value="${v}" ${v===sel?'selected':''}>${v}</option>`;} return h; }
+    function minOpts(sel) {
+      let h='<option value="">--</option>';
+      const tens=[0,10,20,30,40,50];
+      for(const i of tens){const v=String(i).padStart(2,'0'); h+=`<option value="${v}" ${v===sel?'selected':''}>${v}</option>`;}
+      if(sel && !tens.includes(parseInt(sel))){ h+=`<option value="${sel}" selected>${sel}</option>`; }
+      return h;
+    }
     function getTime(p) { const h=document.getElementById(p+'H').value, m=document.getElementById(p+'M').value; return (h&&m)?`${h}:${m}`:''; }
-    function setNow(p) { const n=new Date(); document.getElementById(p+'H').value=String(n.getHours()).padStart(2,'0'); document.getElementById(p+'M').value=String(Math.round(n.getMinutes()/10)*10%60).padStart(2,'0'); }
+    function setNow(p) {
+      const n=new Date(), mv=String(n.getMinutes()).padStart(2,'0');
+      document.getElementById(p+'H').value=String(n.getHours()).padStart(2,'0');
+      const sel=document.getElementById(p+'M');
+      if(![...sel.options].some(o=>o.value===mv)){ const opt=document.createElement('option'); opt.value=mv; opt.textContent=mv; sel.appendChild(opt); }
+      sel.value=mv;
+    }
     function timePicker(p,label,sh,sm) {
       return `<div class="form-group"><label>${label}</label>
         <div class="time-picker-row">
