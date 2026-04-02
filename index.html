@@ -569,7 +569,7 @@
         <h2>勤務時間を追加</h2>
         <div class="form-group"><label>日付</label><input type="date" id="inputDate" value="${ds}"></div>
         ${timePicker('start','開始時刻')}${timePicker('end','終了時刻')}
-        <div class="form-group"><label>メモ（任意）</label><textarea id="inputMemo" rows="2" placeholder="例：まちだ面談"></textarea></div>
+        <div class="form-group"><label>メモ（任意）</label><textarea id="inputMemo" rows="2" placeholder=""></textarea></div>
         <div class="modal-actions"><button class="btn-cancel" onclick="hideModal()">キャンセル</button><button class="btn-save" onclick="saveEntry()">保存</button></div>`;
       showModal();
     }
