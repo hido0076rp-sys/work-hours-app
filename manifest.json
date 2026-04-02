@@ -4,8 +4,8 @@
   "description": "勤務時間を記録して時間単価を計算するアプリ",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#FFF9F6",
-  "theme_color": "#FFCFB8",
+  "background_color": "#0D0F14",
+  "theme_color": "#0D0F14",
   "orientation": "portrait",
   "icons": [
     {

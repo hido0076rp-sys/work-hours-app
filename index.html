@@ -3,191 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#FFCFB8">
+  <meta name="theme-color" content="#0D0F14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>稼働時間管理</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'M PLUS Rounded 1c', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans JP', sans-serif; }
     :root {
-      --peach: #FFE4D6; --peach-dark: #E8936A; --peach-text: #A0522D;
-      --mint: #D4F5E9; --mint-dark: #5BBFA0; --mint-text: #2E7D6B;
-      --lavender: #EAE4FF; --lavender-dark: #9B87D4; --lavender-text: #5B4A9C;
-      --lemon: #FFFACC; --lemon-dark: #E8C843; --lemon-text: #8A7000;
-      --sky: #D6EEFF; --sky-dark: #68B0E8; --sky-text: #1C5E9A;
-      --bg: #FFF9F6; --card: #FFFFFF;
-      --text-main: #3D2B1F; --text-sub: #A08070; --text-hint: #C8B4AA;
-      --radius: 20px; --danger: #E08080;
+      --bg0: #0D0F14;
+      --bg1: #13161E;
+      --bg2: #1C2030;
+      --bg3: #252A3A;
+      --accent: #6C8EFF;
+      --accent2: #A78BFA;
+      --accent3: #34D399;
+      --accent4: #FB923C;
+      --text1: #E8ECF4;
+      --text2: #8891A8;
+      --text3: #4A5168;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(108,142,255,0.25);
+      --danger: #F87171;
+      --radius: 16px;
     }
-    body { background: var(--bg); color: var(--text-main); min-height: 100vh; padding-bottom: 80px; }
+    body { background: var(--bg0); color: var(--text1); min-height: 100vh; padding-bottom: 80px; }
 
     /* Header */
     .header {
-      background: linear-gradient(135deg, #FFCFB8 0%, #FFB8D4 50%, #C8B8FF 100%);
-      padding: 20px 20px 16px;
+      background: var(--bg1);
+      padding: 28px 20px 22px;
+      border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 100;
       overflow: hidden;
     }
     .header::before {
-      content: ''; position: absolute; width: 120px; height: 120px;
-      background: rgba(255,255,255,0.2); border-radius: 50%; top: -30px; right: -20px;
+      content: ''; position: absolute; width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(108,142,255,0.08) 0%, transparent 70%);
+      top: -60px; right: -40px;
     }
     .header::after {
-      content: ''; position: absolute; width: 80px; height: 80px;
-      background: rgba(255,255,255,0.15); border-radius: 50%; bottom: -20px; left: 10px;
+      content: ''; position: absolute; width: 120px; height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%);
+      bottom: -30px; left: -20px;
     }
     .header-top {
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 4px; position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; position: relative; z-index: 1;
     }
-    .app-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); letter-spacing: 0.05em; }
+    .app-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px; font-weight: 500;
+      color: var(--text3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
     .month-nav {
       display: flex; align-items: center; justify-content: center; gap: 16px;
       position: relative; z-index: 1;
     }
     .nav-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(255,255,255,0.35); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; color: white; font-weight: 700;
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--bg3); border: 1px solid var(--border);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text2);
+      transition: all 0.15s;
     }
-    .nav-btn:active { background: rgba(255,255,255,0.55); }
+    .nav-btn:hover { background: var(--bg2); color: var(--text1); border-color: var(--border2); }
     .month-label {
-      font-size: 24px; font-weight: 700; color: white;
-      text-shadow: 0 2px 8px rgba(180,120,120,0.2);
-      min-width: 160px; text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px; font-weight: 700; color: var(--text1);
+      position: relative; z-index: 1;
     }
+    .month-label .year { color: var(--accent); }
 
     /* Stats */
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 16px 0; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 14px 0; }
     .stat-card {
-      background: var(--card); border-radius: var(--radius); padding: 14px 16px;
-      border: 1.5px solid transparent; position: relative; overflow: hidden;
+      background: var(--bg2); border-radius: var(--radius); padding: 14px;
+      border: 1px solid var(--border); position: relative; overflow: hidden;
     }
-    .stat-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-      border-radius: 3px 3px 0 0;
+    .stat-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      border-radius: 0 0 16px 16px;
     }
-    .stat-card.peach { border-color: #FFD0BC; }
-    .stat-card.peach::before { background: linear-gradient(90deg, #FFB899, #FFC8A8); }
-    .stat-card.mint { border-color: #B8EDD8; }
-    .stat-card.mint::before { background: linear-gradient(90deg, #7DD8B8, #A8EAD0); }
-    .stat-card.lavender { border-color: #D8CCFF; }
-    .stat-card.lavender::before { background: linear-gradient(90deg, #B8A8EE, #CFC4FF); }
-    .stat-card.lemon { border-color: #FFEBB8; }
-    .stat-card.lemon::before { background: linear-gradient(90deg, #FFD878, #FFE898); }
-    .stat-icon { font-size: 16px; margin-bottom: 4px; }
-    .stat-label { font-size: 10px; font-weight: 500; color: var(--text-sub); letter-spacing: 0.04em; margin-bottom: 2px; }
-    .stat-value { font-size: 20px; font-weight: 700; color: var(--text-main); line-height: 1.1; }
-    .stat-unit { font-size: 12px; font-weight: 500; color: var(--text-sub); }
+    .stat-card.peach::after { background: var(--accent); }
+    .stat-card.mint::after { background: var(--accent3); }
+    .stat-card.lavender::after { background: var(--accent2); }
+    .stat-card.lemon::after { background: var(--accent4); }
+    .stat-icon { font-size: 16px; margin-bottom: 4px; display: none; }
+    .stat-label { font-size: 10px; font-weight: 400; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 6px; }
+    .stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px; font-weight: 700; line-height: 1;
+    }
+    .stat-unit { font-size: 12px; font-weight: 400; margin-left: 2px; }
+    .stat-card.peach .stat-value { color: #8BAEFF; }
+    .stat-card.peach .stat-unit { color: var(--text2); }
+    .stat-card.mint .stat-value { color: #5CE8B5; }
+    .stat-card.mint .stat-unit { color: var(--text2); }
+    .stat-card.lavender .stat-value { color: #BBA8FF; }
+    .stat-card.lavender .stat-unit { color: var(--text2); }
+    .stat-card.lemon .stat-value { color: #FDB07A; }
+    .stat-card.lemon .stat-unit { color: var(--text2); }
 
     .section-label {
-      font-size: 11px; font-weight: 700; color: var(--text-hint);
-      letter-spacing: 0.08em; padding: 16px 20px 8px;
+      font-size: 10px; font-weight: 500; color: var(--text3);
+      letter-spacing: 0.1em; padding: 16px 18px 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      text-transform: uppercase;
     }
 
     /* Day list */
-    .day-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; }
+    .day-list { padding: 0 14px; display: flex; flex-direction: column; gap: 6px; padding-bottom: 16px; }
     .day-card {
-      background: var(--card); border-radius: 16px; padding: 12px 14px;
-      display: flex; align-items: center; border: 1.5px solid #F5EDE8;
-      cursor: pointer; transition: transform 0.15s;
+      background: var(--bg1); border-radius: 14px; padding: 13px 15px;
+      display: flex; align-items: center; border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.15s;
     }
-    .day-card:active { transform: translateX(3px); border-color: #FFD0C0; }
-    .day-card.today { border-color: #FFB8A8; background: #FFF5F2; }
-    .day-card.has-work { border-color: #C8E8D8; }
+    .day-card:hover { background: var(--bg2); border-color: var(--border2); }
+    .day-card:active { transform: translateX(3px); }
+    .day-card.today { background: var(--bg2); border-color: rgba(108,142,255,0.3); }
+    .day-card.has-work { border-color: rgba(52,211,153,0.2); }
     .day-dot {
-      width: 36px; height: 36px; border-radius: 12px;
+      width: 36px; height: 36px; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-right: 12px; font-size: 13px; font-weight: 700;
+      flex-shrink: 0; margin-right: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px; font-weight: 700;
     }
-    .day-dot.mon { background: var(--mint); color: var(--mint-text); }
-    .day-dot.tue { background: #FFE8F0; color: #C05080; }
-    .day-dot.wed { background: var(--sky); color: var(--sky-text); }
-    .day-dot.thu { background: var(--lavender); color: var(--lavender-text); }
-    .day-dot.fri { background: var(--peach); color: var(--peach-text); }
-    .day-dot.sat { background: var(--lemon); color: var(--lemon-text); }
-    .day-dot.sun { background: #FFE0E0; color: #C05050; }
+    .day-dot.today-dot { background: var(--accent); color: white; }
+    .day-dot:not(.today-dot) { background: var(--bg3); color: var(--text2); }
     .day-info { flex: 1; }
-    .day-title { font-size: 13px; font-weight: 700; color: var(--text-main); }
-    .day-sub { font-size: 11px; color: var(--text-hint); }
-    .day-hours { font-size: 13px; font-weight: 700; color: var(--text-sub); text-align: right; }
-    .day-hours.worked { color: var(--peach-dark); }
+    .day-title { font-size: 14px; font-weight: 500; color: var(--text1); }
+    .day-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+    .day-hours {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; font-weight: 500; color: var(--text3);
+    }
+    .day-hours.worked { color: var(--accent3); }
     .today-badge {
-      font-size: 9px; background: linear-gradient(135deg, #FFB8A0, #FFD0A8);
-      color: white; padding: 2px 7px; border-radius: 20px; font-weight: 700; margin-left: 4px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); margin-left: 8px;
+      display: inline-block; vertical-align: middle;
     }
 
     /* Multi-slot */
-    .day-card-multi { background: var(--card); border-radius: 16px; padding: 12px 14px; border: 1.5px solid #C8E8D8; cursor: pointer; }
+    .day-card-multi {
+      background: var(--bg1); border-radius: 14px; padding: 13px 15px;
+      border: 1px solid rgba(52,211,153,0.2); cursor: pointer; transition: all 0.15s;
+    }
+    .day-card-multi:hover { background: var(--bg2); border-color: var(--border2); }
     .day-card-multi:active { transform: translateX(3px); }
     .day-card-multi .multi-header { display: flex; align-items: center; margin-bottom: 6px; }
-    .day-card-multi .slot-row { display: flex; justify-content: space-between; padding: 3px 0 3px 48px; font-size: 12px; color: var(--text-sub); }
+    .day-card-multi .slot-row { display: flex; justify-content: space-between; padding: 3px 0 3px 48px; font-size: 12px; color: var(--text2); }
 
     /* FAB */
     .fab {
       position: fixed; bottom: 88px; right: 20px;
-      width: 52px; height: 52px; border-radius: 18px;
-      background: linear-gradient(135deg, #FFAB90, #FF8FC0);
+      width: 52px; height: 52px; border-radius: 16px;
+      background: var(--accent);
       border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 16px rgba(255,140,140,0.35);
-      font-size: 24px; color: white; z-index: 90;
+      box-shadow: 0 0 20px rgba(108,142,255,0.4);
+      font-size: 22px; font-weight: 300; color: white; z-index: 90;
+      transition: all 0.2s;
     }
+    .fab:hover { transform: scale(1.08); box-shadow: 0 0 28px rgba(108,142,255,0.6); }
     .fab:active { transform: scale(0.95); }
 
     /* Bottom nav */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 72px;
-      background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
-      border-top: 1px solid #F0E8E4; display: flex;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 68px;
+      background: var(--bg1);
+      border-top: 1px solid var(--border); display: flex;
       align-items: center; justify-content: space-around; padding: 0 8px 8px; z-index: 100;
     }
     .nav-item {
       display: flex; flex-direction: column; align-items: center; gap: 3px;
-      padding: 8px 16px; border-radius: 14px; cursor: pointer; border: none; background: none;
+      padding: 8px 18px; border-radius: 12px; cursor: pointer; border: none; background: none;
+      transition: background 0.15s;
     }
-    .nav-item:active { background: #FFF0EB; }
-    .nav-item.active { background: #FFE8E0; }
-    .nav-icon { font-size: 18px; }
-    .nav-label { font-size: 10px; font-weight: 700; color: var(--text-hint); }
-    .nav-item.active .nav-label { color: var(--peach-dark); }
+    .nav-item:hover { background: var(--bg3); }
+    .nav-item.active { background: rgba(108,142,255,0.12); }
+    .nav-icon { font-size: 16px; }
+    .nav-label { font-size: 10px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
+    .nav-item.active .nav-label { color: var(--accent); }
+    .nav-item.active .nav-icon { filter: drop-shadow(0 0 4px rgba(108,142,255,0.6)); }
 
     /* Modal */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(60,40,30,0.4); z-index: 200;
+      background: rgba(0,0,0,0.6); z-index: 200;
       display: flex; align-items: flex-end; justify-content: center;
     }
     .modal-overlay.hidden { display: none; }
     .modal {
-      background: var(--bg); border-radius: 28px 28px 0 0; padding: 24px 20px 32px;
+      background: var(--bg1); border-radius: 28px 28px 0 0; padding: 24px 20px 32px;
       width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
+      border: 1px solid var(--border); border-bottom: none;
     }
-    .modal h2 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 20px; }
+    .modal h2 { font-size: 18px; font-weight: 700; color: var(--text1); margin-bottom: 20px; }
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-hint); letter-spacing: 0.04em; margin-bottom: 6px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; margin-bottom: 6px; }
     .form-group input, .form-group textarea, .form-group select {
-      padding: 12px; border: 1.5px solid #F0E0D8; border-radius: 14px;
-      font-size: 16px; outline: none; background: white; font-family: inherit;
+      padding: 12px; border: 1px solid var(--border); border-radius: 12px;
+      font-size: 16px; outline: none; background: var(--bg2); font-family: inherit;
+      color: var(--text1);
     }
     .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-      border-color: #FFB8A0; box-shadow: 0 0 0 3px rgba(255,184,160,0.2);
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,142,255,0.15);
     }
     .form-group input, .form-group textarea { width: 100%; }
     .form-group textarea { resize: vertical; min-height: 50px; }
     .time-picker-row { display: flex; align-items: center; gap: 6px; }
     .time-picker-row select {
       flex: 1; padding: 12px 4px; font-size: 18px; text-align: center;
-      border: 1.5px solid #F0E0D8; border-radius: 14px; background: white;
+      border: 1px solid var(--border); border-radius: 12px; background: var(--bg2);
       outline: none; appearance: none; -webkit-appearance: none; font-family: inherit;
+      color: var(--text1);
     }
-    .time-picker-row select:focus { border-color: #FFB8A0; box-shadow: 0 0 0 3px rgba(255,184,160,0.2); }
-    .time-picker-row .colon { font-size: 20px; font-weight: bold; color: var(--text-hint); }
+    .time-picker-row select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,142,255,0.15); }
+    .time-picker-row .colon { font-size: 20px; font-weight: bold; color: var(--text3); }
     .btn-now {
-      padding: 10px 12px; background: linear-gradient(135deg, #FFD0B8, #FFC0D0);
+      padding: 10px 12px; background: var(--accent);
       color: white; border: none; border-radius: 12px; font-size: 13px;
       font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit;
     }
@@ -197,12 +239,12 @@
       flex: 1; padding: 14px; border: none; border-radius: 14px;
       font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
     }
-    .btn-cancel { background: #F0E8E4; color: var(--text-sub); }
-    .btn-save { background: linear-gradient(135deg, #FFAB90, #FF8FC0); color: white; }
+    .btn-cancel { background: var(--bg3); color: var(--text2); }
+    .btn-save { background: var(--accent); color: white; }
     .btn-save:active { opacity: 0.85; }
     .btn-delete-full {
-      width: 100%; padding: 12px; border: 1.5px solid var(--danger); border-radius: 14px;
-      font-size: 13px; cursor: pointer; background: white; color: var(--danger);
+      width: 100%; padding: 12px; border: 1px solid var(--danger); border-radius: 14px;
+      font-size: 13px; cursor: pointer; background: transparent; color: var(--danger);
       font-weight: 700; margin-top: 12px; font-family: inherit;
     }
 
@@ -213,62 +255,65 @@
     /* Rate page */
     .rate-page { padding: 16px; }
     .rate-section {
-      background: var(--card); border-radius: var(--radius); padding: 16px;
-      margin-bottom: 12px; border: 1.5px solid #F5EDE8; overflow: hidden;
+      background: var(--bg2); border-radius: var(--radius); padding: 16px;
+      margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden;
     }
-    .rate-section h3 { font-size: 13px; color: var(--text-hint); margin-bottom: 12px; font-weight: 700; letter-spacing: 0.04em; }
+    .rate-section h3 { font-size: 13px; color: var(--text3); margin-bottom: 12px; font-weight: 700; letter-spacing: 0.04em; }
     .income-row {
       display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
     }
-    .income-row label { font-size: 13px; font-weight: 700; min-width: 40px; color: var(--text-sub); }
+    .income-row label { font-size: 13px; font-weight: 700; min-width: 40px; color: var(--text2); }
     .income-row input {
-      flex: 1; min-width: 0; padding: 10px; border: 1.5px solid #F0E0D8; border-radius: 12px;
+      flex: 1; min-width: 0; padding: 10px; border: 1px solid var(--border); border-radius: 12px;
       font-size: 15px; outline: none; text-align: right; font-family: inherit;
+      background: var(--bg3); color: var(--text1);
     }
-    .income-row input:focus { border-color: #FFB8A0; }
-    .income-row .unit { font-size: 13px; color: var(--text-hint); }
+    .income-row input:focus { border-color: var(--accent); }
+    .income-row .unit { font-size: 13px; color: var(--text3); }
     .rate-result {
       text-align: center; padding: 20px;
-      background: linear-gradient(135deg, #FFE8D8, #FFD8E8, #E8D8FF);
+      background: linear-gradient(135deg, rgba(108,142,255,0.15), rgba(167,139,250,0.15));
       border-radius: var(--radius);
     }
-    .rate-result .rate-label { font-size: 13px; color: var(--text-sub); }
-    .rate-result .rate-value { font-size: 34px; font-weight: 700; color: var(--peach-dark); margin-top: 4px; }
+    .rate-result .rate-label { font-size: 13px; color: var(--text2); }
+    .rate-result .rate-value { font-size: 34px; font-weight: 700; color: #8BAEFF; margin-top: 4px; font-family: 'Space Grotesk', sans-serif; }
     .year-selector {
       display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px;
     }
     .year-selector button {
-      background: rgba(255,255,255,0.8); border: 1.5px solid #F0E0D8;
+      background: var(--bg3); border: 1px solid var(--border);
       width: 32px; height: 32px; border-radius: 50%; font-size: 14px; cursor: pointer;
+      color: var(--text2);
     }
-    .year-selector .year-label { font-size: 16px; font-weight: 700; color: var(--text-main); }
+    .year-selector .year-label { font-size: 16px; font-weight: 700; color: var(--text1); }
     .year-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .year-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #F0E8E4; font-size: 10px; color: var(--text-hint); font-weight: 700; }
-    .year-table td { padding: 7px 4px; border-bottom: 1px solid #F8F0EC; }
-    .year-table tr:last-child td { border-bottom: none; font-weight: 700; }
+    .year-table th { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--bg3); font-size: 10px; color: var(--text3); font-weight: 700; }
+    .year-table td { padding: 7px 4px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text2); }
+    .year-table tr:last-child td { border-bottom: none; font-weight: 700; color: var(--text1); }
     .year-table .num { text-align: right; }
 
     /* Settings */
     .settings-page { padding: 16px; }
     .settings-section {
-      background: var(--card); border-radius: var(--radius); padding: 16px;
-      margin-bottom: 12px; border: 1.5px solid #F5EDE8;
+      background: var(--bg2); border-radius: var(--radius); padding: 16px;
+      margin-bottom: 12px; border: 1px solid var(--border);
     }
-    .settings-section h3 { font-size: 13px; margin-bottom: 12px; font-weight: 700; color: var(--text-main); }
+    .settings-section h3 { font-size: 13px; margin-bottom: 12px; font-weight: 700; color: var(--text1); }
     .settings-btn {
-      width: 100%; padding: 12px; border: 1.5px solid #F0E0D8; border-radius: 14px;
-      background: white; font-size: 13px; cursor: pointer; margin-bottom: 8px;
-      text-align: left; font-family: inherit; font-weight: 500; color: var(--text-main);
+      width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 14px;
+      background: var(--bg3); font-size: 13px; cursor: pointer; margin-bottom: 8px;
+      text-align: left; font-family: inherit; font-weight: 500; color: var(--text1);
+      transition: all 0.15s;
     }
-    .settings-btn:active { background: #FFF5F0; }
-    .settings-btn.danger { color: var(--danger); border-color: #FFD0D0; }
+    .settings-btn:active { background: var(--bg2); }
+    .settings-btn.danger { color: var(--danger); border-color: rgba(248,113,113,0.3); }
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="header-top">
-      <span class="app-title">稼働時間管理</span>
+      <span class="app-title">勤務ログ</span>
     </div>
     <div class="month-nav" id="monthNav">
       <button class="nav-btn" onclick="prevMonth()">◀</button>
@@ -288,8 +333,8 @@
       <div class="rate-section">
         <h3>月収入力</h3>
         <div id="monthlyIncomeInputs"></div>
-        <div style="margin-top:12px; text-align:right; font-size:13px; color:var(--text-sub);">
-          年収合計: <strong id="annualIncomeTotal" style="color:var(--peach-dark);">¥0</strong>
+        <div style="margin-top:12px; text-align:right; font-size:13px; color:var(--text2);">
+          年収合計: <strong id="annualIncomeTotal" style="color:#8BAEFF;">¥0</strong>
         </div>
       </div>
       <div class="rate-section">
@@ -317,7 +362,7 @@
       <div class="settings-section">
         <button class="settings-btn danger" onclick="clearAllData()">🗑 全データを削除</button>
       </div>
-      <div class="settings-section" style="text-align:center; color: var(--text-hint); font-size: 11px;">
+      <div class="settings-section" style="text-align:center; color: var(--text3); font-size: 11px;">
         <p>稼働時間管理 v2.0</p>
         <p style="margin-top:4px;">データはこの端末のブラウザ内に保存されます</p>
         <p>サーバーへの送信は一切ありません</p>
@@ -346,6 +391,7 @@
   <script>
     const STORAGE_KEY = 'workHoursData';
     const INCOME_KEY = 'monthlyIncomes';
+    const MONTHS_EN = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
 
     function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; } }
     function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
@@ -382,8 +428,8 @@
     let curY=new Date().getFullYear(), curM=new Date().getMonth()+1, rateY=new Date().getFullYear();
 
     function render() {
-      document.getElementById('monthLabel').textContent=`${curY}年 ${curM}月`;
-      document.getElementById('sectionLabel').textContent=`${curM}月のスケジュール`;
+      document.getElementById('monthLabel').innerHTML=`<span class="year">${curY}</span>年 ${curM}月`;
+      document.getElementById('sectionLabel').textContent=`${MONTHS_EN[curM]} ${curY}`;
       renderSummary(); renderList();
     }
     function buildDayMap(entries) { const m={}; for(const e of entries){let t=0; for(const s of(e.slots||[]))t+=calcDuration(s.start,s.end); m[e.date]=(m[e.date]||0)+t;} return m; }
@@ -394,10 +440,10 @@
       for(const v of Object.values(dm)){if(v>0){wd++;total+=v;}}
       const avg=wd>0?Math.round(total/wd):0;
       document.getElementById('monthlySummary').innerHTML=`
-        <div class="stat-card peach"><div class="stat-icon">⏱</div><div class="stat-label">合計勤務時間</div><div class="stat-value">${Math.floor(total/60)}<span class="stat-unit"> 時間 ${total%60} 分</span></div></div>
-        <div class="stat-card mint"><div class="stat-icon">📅</div><div class="stat-label">勤務日数</div><div class="stat-value">${wd}<span class="stat-unit"> 日</span></div></div>
-        <div class="stat-card lavender"><div class="stat-icon">📊</div><div class="stat-label">平均勤務時間/日</div><div class="stat-value">${Math.floor(avg/60)}<span class="stat-unit"> 時間 ${avg%60} 分</span></div></div>
-        <div class="stat-card lemon"><div class="stat-icon">☀</div><div class="stat-label">休日日数</div><div class="stat-value">${days-wd}<span class="stat-unit"> 日</span></div></div>`;
+        <div class="stat-card peach"><div class="stat-label">合計勤務時間</div><div class="stat-value">${Math.floor(total/60)}<span class="stat-unit">時間 ${total%60}分</span></div></div>
+        <div class="stat-card mint"><div class="stat-label">勤務日数</div><div class="stat-value">${wd}<span class="stat-unit">日</span></div></div>
+        <div class="stat-card lavender"><div class="stat-label">平均時間 / 日</div><div class="stat-value">${Math.floor(avg/60)}<span class="stat-unit">時間 ${avg%60}分</span></div></div>
+        <div class="stat-card lemon"><div class="stat-label">休日日数</div><div class="stat-value">${days-wd}<span class="stat-unit">日</span></div></div>`;
     }
 
     function renderList() {
@@ -407,40 +453,46 @@
       for(let d=1;d<=days;d++){
         const ds=`${curY}-${String(curM).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const dow=dowName(curY,curM,d), dc=dowClass(curY,curM,d), today=isToday(curY,curM,d);
+        const di=dowIdx(curY,curM,d);
         const e=em[ds];
-        const todayBadge=today?'<span class="today-badge">TODAY</span>':'';
+        const todayBadge=today?'<span class="today-badge"></span>':'';
+        const dotClass=today?'day-dot today-dot':'day-dot';
+        const isSunday=di===0;
         if(e && e.slots && e.slots.length>0){
           let tot=0; e.slots.forEach(s=>tot+=calcDuration(s.start,s.end));
           if(e.slots.length===1){
             const s=e.slots[0];
             html+=`<div class="day-card has-work ${today?'today':''}" onclick="openEditModal('${ds}')">
-              <div class="day-dot ${dc}">${dow}</div>
+              <div class="${dotClass}">${d}</div>
               <div class="day-info">
                 <div class="day-title">${curM}月 ${d}日 ${todayBadge}</div>
-                <div class="day-sub">${s.start} - ${s.end}${e.memo?' · '+esc(e.memo):''}</div>
+                <div class="day-sub">${dow}曜日${e.memo?' · '+esc(e.memo):''}${today?' · 今日':''}</div>
               </div>
               <div class="day-hours worked">${fmtMin(tot)}</div>
             </div>`;
           } else {
             html+=`<div class="day-card-multi" onclick="openEditModal('${ds}')">
-              <div class="multi-header"><div class="day-dot ${dc}">${dow}</div>
-                <div class="day-info"><div class="day-title">${curM}月 ${d}日 ${todayBadge}</div></div>
+              <div class="multi-header"><div class="${dotClass}">${d}</div>
+                <div class="day-info"><div class="day-title">${curM}月 ${d}日 ${todayBadge}</div><div class="day-sub">${dow}曜日${today?' · 今日':''}</div></div>
                 <div class="day-hours worked">${fmtMin(tot)}</div>
               </div>`;
             for(const s of e.slots){
               html+=`<div class="slot-row"><span>${s.start} - ${s.end}</span><span>${fmtMin(calcDuration(s.start,s.end))}</span></div>`;
             }
-            if(e.memo) html+=`<div class="slot-row" style="color:var(--text-hint);font-style:italic;">${esc(e.memo)}</div>`;
+            if(e.memo) html+=`<div class="slot-row" style="color:var(--text3);font-style:italic;">${esc(e.memo)}</div>`;
             html+=`</div>`;
           }
         } else {
+          const isHoliday = isSunday;
           html+=`<div class="day-card ${today?'today':''}" onclick="openAddModalForDate('${ds}')">
-            <div class="day-dot ${dc}">${dow}</div>
+            <div class="${dotClass}">${d}</div>
             <div class="day-info">
               <div class="day-title">${curM}月 ${d}日 ${todayBadge}</div>
-              <div class="day-sub">${dow}曜日</div>
+              <div class="day-sub">${dow}曜日${isHoliday?' · 休日':''}${today?' · 今日':''}</div>
             </div>
-            <div class="day-hours">--</div>
+            <div class="day-hours"${isHoliday?' style="color:var(--danger);"':''}>
+              ${isHoliday?'休':'--'}
+            </div>
           </div>`;
         }
       }
@@ -455,7 +507,7 @@
       document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('fab').style.display=p==='monthly'?'flex':'none';
-      document.getElementById('monthNav').style.display=p==='monthly'?'flex':'none';
+      document.querySelector('.header .month-nav').style.display=p==='monthly'?'flex':'none';
       if(p==='rate') renderRatePage();
     }
 
@@ -483,18 +535,18 @@
       const [,mo,da]=ds.split('-').map(Number), dow=dowName(curY,mo,da);
       let slotsHtml='';
       entry.slots.forEach((s,i)=>{
-        slotsHtml+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0E8E4;">
+        slotsHtml+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
           <span style="flex:1;font-size:13px;">${s.start} - ${s.end} (${fmtMin(calcDuration(s.start,s.end))})</span>
           <button onclick="deleteSlot('${ds}',${i})" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;">✕</button>
         </div>`;
       });
       document.getElementById('modalContent').innerHTML=`
         <h2>${mo}/${da}(${dow})の勤務記録</h2>
-        <div style="margin-bottom:12px;font-size:13px;color:var(--text-sub);">合計: <strong style="color:var(--peach-dark);">${fmtMin(tot)}</strong></div>
+        <div style="margin-bottom:12px;font-size:13px;color:var(--text2);">合計: <strong style="color:#8BAEFF;">${fmtMin(tot)}</strong></div>
         ${slotsHtml}
-        ${entry.memo?`<div style="font-size:12px;color:var(--text-hint);margin:8px 0;font-style:italic;">メモ: ${esc(entry.memo)}</div>`:''}
-        <div style="border-top:1px solid #F0E8E4;padding-top:16px;margin-top:8px;">
-          <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text-main);">時間を追加</h3>
+        ${entry.memo?`<div style="font-size:12px;color:var(--text3);margin:8px 0;font-style:italic;">メモ: ${esc(entry.memo)}</div>`:''}
+        <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+          <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text1);">時間を追加</h3>
           ${timePicker('start','開始時刻')}${timePicker('end','終了時刻')}
           <div class="form-group"><label>メモ</label><textarea id="inputMemo" rows="2">${entry.memo?esc(entry.memo):''}</textarea></div>
         </div>
@@ -539,7 +591,6 @@
       document.getElementById('rateYearLabel').textContent=`${rateY}年`;
       const incomes=loadIncomes();
 
-      // Monthly income inputs
       let incHtml='';
       for(let m=1;m<=12;m++){
         const key=`${rateY}-${String(m).padStart(2,'0')}`;
@@ -552,7 +603,6 @@
       }
       document.getElementById('monthlyIncomeInputs').innerHTML=incHtml;
 
-      // Calc annual total
       let annualIncome=0;
       for(let m=1;m<=12;m++){
         const key=`${rateY}-${String(m).padStart(2,'0')}`;
@@ -560,7 +610,6 @@
       }
       document.getElementById('annualIncomeTotal').textContent='¥'+annualIncome.toLocaleString();
 
-      // Year summary table
       let yt=0,ywd=0,yrd=0,rows='';
       for(let m=1;m<=12;m++){
         const entries=getMonthEntries(rateY,m), dim=daysIn(rateY,m), dm=buildDayMap(entries);
@@ -571,14 +620,14 @@
         const has=mm>0;
         const mKey=`${rateY}-${String(m).padStart(2,'0')}`;
         const mInc=parseInt(incomes[mKey])||0;
-        rows+=`<tr style="color:${has?'var(--text-main)':'var(--text-hint)'}">
+        rows+=`<tr style="color:${has?'var(--text1)':'var(--text3)'}">
           <td>${m}月</td><td class="num">${has?fmtHM(mm):'--'}</td>
           <td class="num">${has?mwd+'日':'--'}</td><td class="num">${has?fmtMin(avg):'--'}</td>
-          <td class="num" style="color:${mInc?'var(--peach-dark)':'inherit'}">${mInc?'¥'+mInc.toLocaleString():'--'}</td>
+          <td class="num" style="color:${mInc?'#8BAEFF':'inherit'}">${mInc?'¥'+mInc.toLocaleString():'--'}</td>
         </tr>`;
       }
       const yavg=ywd>0?Math.round(yt/ywd):0;
-      rows+=`<tr><td>合計</td><td class="num">${fmtHM(yt)}</td><td class="num">${ywd}日</td><td class="num">${fmtMin(yavg)}</td><td class="num" style="color:var(--peach-dark);">¥${annualIncome.toLocaleString()}</td></tr>`;
+      rows+=`<tr><td>合計</td><td class="num">${fmtHM(yt)}</td><td class="num">${ywd}日</td><td class="num">${fmtMin(yavg)}</td><td class="num" style="color:#8BAEFF;">¥${annualIncome.toLocaleString()}</td></tr>`;
       document.getElementById('yearSummaryTable').innerHTML=`<table class="year-table"><thead><tr><th>月</th><th class="num">時間</th><th class="num">日数</th><th class="num">平均</th><th class="num">月収</th></tr></thead><tbody>${rows}</tbody></table>`;
 
       const yh=yt/60, rate=yh>0?Math.round(annualIncome/yh):0;
