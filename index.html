@@ -672,9 +672,10 @@
       for(let m=1;m<=12;m++){
         const key=`${rateY}-${String(m).padStart(2,'0')}`;
         const val=incomes[key]||'';
+        const fmtVal=val?Number(val).toLocaleString():'';
         incHtml+=`<div class="income-row">
           <label>${m}月</label>
-          <input type="number" inputmode="numeric" placeholder="0" value="${val}" onchange="saveMonthIncome('${key}',this.value)">
+          <input type="text" inputmode="numeric" placeholder="0" value="${fmtVal}" onchange="saveMonthIncome('${key}',this)" onfocus="this.value=this.value.replace(/,/g,'')" onblur="formatIncomeInput(this)">
           <span class="unit">円</span>
         </div>`;
       }
@@ -714,8 +715,10 @@
         <div class="rate-label" style="margin-top:4px;">1時間あたり</div>`;
     }
     function changeRateYear(d){rateY+=d;renderRatePage();}
-    function saveMonthIncome(key,val){
-      const inc=loadIncomes(); inc[key]=val; saveIncomes(inc);
+    function formatIncomeInput(el){ const n=parseInt(el.value.replace(/,/g,''))||0; el.value=n?n.toLocaleString():''; }
+    function saveMonthIncome(key,el){
+      const raw=el.value.replace(/,/g,'');
+      const inc=loadIncomes(); inc[key]=raw; saveIncomes(inc);
       renderRatePage();
     }
 
