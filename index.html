@@ -391,12 +391,17 @@
   <script>
     const STORAGE_KEY = 'workHoursData';
     const INCOME_KEY = 'monthlyIncomes';
+    const BULK_KEY = 'monthlyBulkHours';
     const MONTHS_EN = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
 
     function loadData() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; } }
     function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
     function loadIncomes() { try { return JSON.parse(localStorage.getItem(INCOME_KEY)) || {}; } catch { return {}; } }
     function saveIncomes(d) { localStorage.setItem(INCOME_KEY, JSON.stringify(d)); }
+    function loadBulk() { try { return JSON.parse(localStorage.getItem(BULK_KEY)) || {}; } catch { return {}; } }
+    function saveBulk(d) { localStorage.setItem(BULK_KEY, JSON.stringify(d)); }
+    function getBulk(y,m) { return loadBulk()[`${y}-${String(m).padStart(2,'0')}`] || null; }
+    function setBulk(y,m,v) { const d=loadBulk(); const k=`${y}-${String(m).padStart(2,'0')}`; if(v===null||v==='') delete d[k]; else d[k]=v; saveBulk(d); }
 
     function getMonthEntries(y,m) { return loadData()[`${y}-${String(m).padStart(2,'0')}`] || []; }
     function setMonthEntries(y,m,e) { const d=loadData(); d[`${y}-${String(m).padStart(2,'0')}`]=e; saveData(d); }
@@ -446,13 +451,34 @@
     }
     function buildDayMap(entries) { const m={}; for(const e of entries){let t=0; for(const s of(e.slots||[]))t+=calcDuration(s.start,s.end); m[e.date]=(m[e.date]||0)+t;} return m; }
 
+    function getMonthTotalMin(y,m) {
+      const bulk=getBulk(y,m);
+      if(bulk!==null){ const b=parseFloat(bulk); return Math.round(b*60); }
+      const entries=getMonthEntries(y,m), dm=buildDayMap(entries);
+      let total=0; for(const v of Object.values(dm)) if(v>0) total+=v;
+      return total;
+    }
+    function getMonthWorkDays(y,m) {
+      const entries=getMonthEntries(y,m), dm=buildDayMap(entries);
+      let wd=0; for(const v of Object.values(dm)) if(v>0) wd++;
+      return wd;
+    }
+
     function renderSummary() {
-      const entries=getMonthEntries(curY,curM), days=daysIn(curY,curM), dm=buildDayMap(entries);
-      let total=0,wd=0;
-      for(const v of Object.values(dm)){if(v>0){wd++;total+=v;}}
+      const days=daysIn(curY,curM), bulk=getBulk(curY,curM);
+      const entries=getMonthEntries(curY,curM), dm=buildDayMap(entries);
+      let total, wd;
+      if(bulk!==null){
+        total=Math.round(parseFloat(bulk)*60);
+        wd=0; for(const v of Object.values(dm)) if(v>0) wd++;
+      } else {
+        total=0; wd=0;
+        for(const v of Object.values(dm)){if(v>0){wd++;total+=v;}}
+      }
       const avg=wd>0?Math.round(total/wd):0;
+      const bulkBadge=bulk!==null?'<span style="font-size:9px;color:var(--accent4);margin-left:4px;">一括</span>':'';
       document.getElementById('monthlySummary').innerHTML=`
-        <div class="stat-card peach"><div class="stat-label">合計勤務時間</div><div class="stat-value">${Math.floor(total/60)}<span class="stat-unit">時間 ${total%60}分</span></div></div>
+        <div class="stat-card peach"><div class="stat-label">合計勤務時間${bulkBadge}</div><div class="stat-value">${Math.floor(total/60)}<span class="stat-unit">時間 ${total%60}分</span></div></div>
         <div class="stat-card mint"><div class="stat-label">勤務日数</div><div class="stat-value">${wd}<span class="stat-unit">日</span></div></div>
         <div class="stat-card lavender"><div class="stat-label">平均時間 / 日</div><div class="stat-value">${Math.floor(avg/60)}<span class="stat-unit">時間 ${avg%60}分</span></div></div>
         <div class="stat-card lemon"><div class="stat-label">休日日数</div><div class="stat-value">${days-wd}<span class="stat-unit">日</span></div></div>`;
@@ -508,6 +534,13 @@
           </div>`;
         }
       }
+      // Bulk input button
+      const bulk=getBulk(curY,curM);
+      html+=`<div style="padding:8px 0;">
+        <button onclick="openBulkModal()" style="width:100%;padding:14px;border-radius:14px;border:1px dashed ${bulk!==null?'var(--accent4)':'var(--border2)'};background:${bulk!==null?'rgba(251,146,60,0.08)':'transparent'};color:${bulk!==null?'var(--accent4)':'var(--accent)'};font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">
+          ${bulk!==null?'⏱ 一括入力済み: '+bulk+'時間（変更する）':'⏱ この月の勤務時間を一括入力'}
+        </button>
+      </div>`;
       document.getElementById('entryList').innerHTML=html;
     }
 
@@ -598,6 +631,38 @@
       setMonthEntries(y,m,entries); hideModal(); render();
     }
 
+    // ---- Bulk Input ----
+    function openBulkModal(){
+      const bulk=getBulk(curY,curM);
+      document.getElementById('modalContent').innerHTML=`
+        <h2>${curY}年${curM}月 一括入力</h2>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.8;">
+          <p>日別の勤務時間を入力できなかった月のために、<br>この月の合計勤務時間をまとめて入力できます。</p>
+          <p style="margin-top:8px;">一括入力した時間は、日別の勤務時間の合計より<br><strong style="color:var(--accent4);">優先して反映</strong>されます。</p>
+          <p style="margin-top:8px;">一括入力はいつでも削除して、<br>日別の合計に戻すことができます。</p>
+        </div>
+        <div class="form-group"><label>合計勤務時間（時間単位・小数OK）</label>
+          <input type="number" id="bulkHours" step="0.5" min="0" placeholder="例: 160.5" value="${bulk!==null?bulk:''}" style="width:100%;font-size:20px;text-align:center;">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="hideModal()">キャンセル</button>
+          <button class="btn-save" onclick="saveBulkInput()">保存</button>
+        </div>
+        ${bulk!==null?'<button class="btn-delete-full" onclick="deleteBulkInput()">一括入力を削除（日別に戻す）</button>':''}`;
+      showModal();
+    }
+    function saveBulkInput(){
+      const v=document.getElementById('bulkHours').value;
+      if(v===''||isNaN(parseFloat(v))){alert('時間を入力してください。');return;}
+      setBulk(curY,curM,parseFloat(v));
+      hideModal(); render();
+    }
+    function deleteBulkInput(){
+      if(!confirm('一括入力を削除して日別の合計に戻しますか？'))return;
+      setBulk(curY,curM,null);
+      hideModal(); render();
+    }
+
     // ---- Rate Page ----
     function renderRatePage(){
       document.getElementById('rateYearLabel').textContent=`${rateY}年`;
@@ -624,9 +689,9 @@
 
       let yt=0,ywd=0,yrd=0,rows='';
       for(let m=1;m<=12;m++){
-        const entries=getMonthEntries(rateY,m), dim=daysIn(rateY,m), dm=buildDayMap(entries);
-        let mm=0,mwd=0;
-        for(const v of Object.values(dm)){if(v>0){mwd++;mm+=v;}}
+        const dim=daysIn(rateY,m);
+        const mm=getMonthTotalMin(rateY,m);
+        const mwd=getMonthWorkDays(rateY,m);
         const mrd=dim-mwd, avg=mwd>0?Math.round(mm/mwd):0;
         yt+=mm; ywd+=mwd; yrd+=mrd;
         const has=mm>0;
@@ -656,7 +721,7 @@
 
     // ---- Settings ----
     function exportData(){
-      const blob=new Blob([JSON.stringify({workHours:loadData(),monthlyIncomes:loadIncomes()},null,2)],{type:'application/json'});
+      const blob=new Blob([JSON.stringify({workHours:loadData(),monthlyIncomes:loadIncomes(),monthlyBulkHours:loadBulk()},null,2)],{type:'application/json'});
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
       a.download=`work-hours-${new Date().toISOString().slice(0,10)}.json`; a.click();
     }
@@ -668,6 +733,7 @@
           const d=JSON.parse(e.target.result);
           if(d.workHours) saveData(d.workHours);
           if(d.monthlyIncomes) saveIncomes(d.monthlyIncomes);
+          if(d.monthlyBulkHours) saveBulk(d.monthlyBulkHours);
           if(d.annualIncome){const inc=loadIncomes();inc.legacy=d.annualIncome;saveIncomes(inc);}
           alert('インポートが完了しました。'); render();
         }catch{alert('ファイルの読み込みに失敗しました。');}
