@@ -542,6 +542,11 @@
         </button>
       </div>`;
       document.getElementById('entryList').innerHTML=html;
+      if(scrollToTodayOnce){
+        scrollToTodayOnce=false;
+        const todayCard=document.querySelector('.day-card.today')||document.querySelector('.day-card-multi');
+        if(todayCard) setTimeout(()=>todayCard.scrollIntoView({block:'center',behavior:'auto'}),0);
+      }
     }
 
     function prevMonth(){curM--;if(curM<1){curM=12;curY--;}render();}
@@ -750,6 +755,7 @@
       render(); alert('全データを削除しました。');
     }
 
+    let scrollToTodayOnce=true;
     render();
     if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
   </script>
